@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "online.shadowalpha/shadowgraph",
+  "title": "ShadowGraph Market Intelligence",
+  "description": "Global evidence-ranked relationship intelligence for AI agents via MPP.",
+  "websiteUrl": "https://shadowalpha.online",
+  "version": "2.3.3",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://shadowalpha.online/_api/mcp"
+    }
+  ]
+}

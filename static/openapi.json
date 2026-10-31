@@ -1,0 +1,438 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ShadowGraph API",
+    "version": "3.0.0",
+    "summary": "Independent live status, infrastructure dependencies and outage research for 3,000+ internet services.",
+    "description": "ShadowGraph probes about 3,200 public endpoints (APIs, SaaS, banks, the most-visited websites, cloud region canaries) every 5 minutes from one measurement node in AWS us-east-1, re-checks failures from six continents every 30 minutes, and maps what each service runs on: hosting provider, cloud region, CDN, DNS and email provider. The API exposes the same data the website shows.\n\nAll endpoints return JSON unless noted, use UTC ISO-8601 timestamps and need no authentication, except the full dependency dataset (bearer key) and the paid machine-intelligence endpoint (HTTP 402 / Machine Payments Protocol). Responses are cached at the edge for 20 s to 5 min (see Cache-Control). Please keep polling to at most once per minute per endpoint; the data changes every 5 minutes.\n\nMethodology, limits and every retired rule are public: https://shadowalpha.online/research/methods",
+    "contact": { "name": "ShadowGraph", "url": "https://shadowalpha.online" },
+    "license": { "name": "Open data tables: CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/" },
+    "x-guidance": "Agents: start with GET /_api/search or GET /_api/status/page for 'is X down?' questions; use GET /_api/radar/status for the full live picture. For market intelligence start with free GET /_api/agent_preview, then POST /_api/machine/intelligence (HTTP 402 / MPP). Outputs labelled inferred or statistical are hypotheses, not proof."
+  },
+  "externalDocs": { "description": "Human-readable API documentation", "url": "https://shadowalpha.online/docs" },
+  "x-service-info": {
+    "categories": ["status-monitoring", "infrastructure-intelligence", "vendor-risk", "open-data", "agent-tools"],
+    "docs": {
+      "homepage": "https://shadowalpha.online",
+      "apiDocs": "https://shadowalpha.online/docs",
+      "mcp": "https://shadowalpha.online/_api/mcp",
+      "a2a": "https://shadowalpha.online/_api/a2a",
+      "agentCard": "https://shadowalpha.online/.well-known/agent-card.json",
+      "mcpManifest": "https://shadowalpha.online/server.json"
+    }
+  },
+  "servers": [
+    { "url": "https://shadowalpha.online", "description": "Production" }
+  ],
+  "tags": [
+    { "name": "Status", "description": "Is a service down right now, since when, and why. Live state from the newest two 5-minute sweeps: up, degraded (one failed check), down (two failed checks in a row)." },
+    { "name": "Search", "description": "One query across services, providers, cloud regions, incidents, SEC customer concentration and public AI agents." },
+    { "name": "Vendor risk", "description": "Bulk infrastructure scan of up to 300 third-party vendors (hosting, region, CDN, DNS, email, network owner, TLS and domain expiry) with portfolio concentration. Built for DORA ICT third-party registers." },
+    { "name": "Research & open data", "description": "Published studies, the dated infrastructure report and the CC BY 4.0 measurement dataset." },
+    { "name": "Dependency data", "description": "Customer to supplier revenue dependencies from SEC annual filings (inline XBRL)." },
+    { "name": "AI agents", "description": "Machine interfaces (MCP, A2A), the free agent preview and the public agent directory with hourly reachability." },
+    { "name": "Machine intelligence (paid)", "description": "Pay-per-call intelligence via the Machine Payments Protocol (Stripe). HTTP returns 402 with a WWW-Authenticate: Payment challenge; MCP returns JSON-RPC error -32042." },
+    { "name": "Markets & official data", "description": "SEC EDGAR filings, EU TED procurement, market data, news, infrastructure and the relationship graph." },
+    { "name": "Service", "description": "Health and readiness." }
+  ],
+  "components": {
+    "securitySchemes": {
+      "datasetKey": { "type": "http", "scheme": "bearer", "bearerFormat": "sgd_…", "description": "Key for the full dependency dataset, issued after subscribing at https://shadowalpha.online/data." },
+      "mpp": { "type": "http", "scheme": "Payment", "description": "Machine Payments Protocol. Send the request without credentials, read the WWW-Authenticate: Payment challenge from the 402 response, obtain a Stripe shared payment token for it and retry the identical request with Authorization: Payment <base64url credential>. The receipt comes back in the Payment-Receipt header." }
+    },
+    "parameters": {
+      "slug": { "name": "slug", "in": "query", "required": true, "description": "Provider (aws, cloudflare, azure, google-cloud, …), a service slug (stripe-api, erste-george-at, …) or a brand prefix (github = every GitHub endpoint). Slugs are lower-case names with non-alphanumerics replaced by '-'.", "schema": { "type": "string", "example": "stripe-api" } }
+    },
+    "schemas": {
+      "Error": { "type": "object", "required": ["error"], "properties": { "error": { "type": "string", "description": "Human-readable reason." } } },
+      "State": { "type": "string", "enum": ["up", "degraded", "down", "unknown"], "description": "up = answered the latest check with HTTP < 500; degraded = failed the latest check only; down = failed the latest two checks; unknown = not checked in the last 30 minutes." },
+      "Service": {
+        "type": "object",
+        "description": "One monitored endpoint with its infrastructure and live state.",
+        "properties": {
+          "id": { "type": "string", "example": "api-stripe-com" },
+          "name": { "type": "string", "example": "Stripe API" },
+          "category": { "type": "string", "example": "Payments & fintech" },
+          "analyzedHost": { "type": ["string", "null"], "example": "api.stripe.com" },
+          "hostingProvider": { "type": ["string", "null"], "description": "Network owner of the serving IP (ASN) or the cloud from its published IP ranges.", "example": "Amazon Web Services" },
+          "hostingRegion": { "type": ["string", "null"], "description": "Cloud region when the IP is in a provider's published regional range; 'global' for global load balancers.", "example": "us-east-1" },
+          "hostingCountry": { "type": ["string", "null"], "example": "US" },
+          "hostingCity": { "type": ["string", "null"], "description": "Approximate city (DB-IP Lite) when the origin is directly visible, not behind a CDN." },
+          "geoCountry": { "type": ["string", "null"] },
+          "hostingLat": { "type": ["number", "null"] },
+          "hostingLon": { "type": ["number", "null"] },
+          "cdn": { "type": ["string", "null"], "example": "Cloudflare" },
+          "dnsProvider": { "type": ["string", "null"], "example": "AWS Route 53" },
+          "emailProvider": { "type": ["string", "null"], "example": "Google Workspace" },
+          "state": { "$ref": "#/components/schemas/State" },
+          "httpStatus": { "type": ["integer", "null"], "description": "Status of the latest probe (redirects are not followed; 401/404 count as reachable)." },
+          "latencyMs": { "type": ["integer", "null"] },
+          "error": { "type": ["string", "null"], "example": "timeout" },
+          "uptime24h": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Share of reachable probes in the last 24 h." },
+          "samples24h": { "type": "integer" }
+        }
+      },
+      "Incident": {
+        "type": "object",
+        "description": "Provider incident: several independent services in the same group (hosting provider, cloud region, CDN or DNS) down at the same time.",
+        "properties": {
+          "id": { "type": "string" },
+          "layer": { "type": "string", "enum": ["hosting", "region", "cdn", "dns"] },
+          "provider": { "type": "string", "example": "Amazon Web Services us-east-1" },
+          "status": { "type": "string", "enum": ["open", "resolved"] },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "lastSeenAt": { "type": "string", "format": "date-time" },
+          "resolvedAt": { "type": ["string", "null"], "format": "date-time" },
+          "affected": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" } } } },
+          "atRisk": { "type": "array", "description": "Services in the same group that still answer.", "items": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" } } } },
+          "peakFailureShare": { "type": "number" }
+        }
+      },
+      "StatusPage": {
+        "type": "object",
+        "description": "Everything behind one 'Is X down?' page.",
+        "properties": {
+          "slug": { "type": "string" },
+          "kind": { "type": "string", "enum": ["provider", "service", "brand", "unknown"] },
+          "name": { "type": "string" },
+          "category": { "type": ["string", "null"] },
+          "checkedAt": { "type": ["string", "null"], "format": "date-time", "description": "Time of the newest sweep." },
+          "rows": { "type": "array", "items": { "allOf": [ { "$ref": "#/components/schemas/Service" }, { "type": "object", "properties": { "via": { "type": "array", "items": { "type": "string", "enum": ["hosting", "cdn", "dns"] }, "description": "Provider pages: the layers through which the service depends on the provider." }, "slug": { "type": "string" }, "since": { "type": ["string", "null"], "format": "date-time", "description": "Start of the current failing streak; null while the service answers." } } } ] } },
+          "incidents": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "provider": { "type": "string" }, "status": { "type": "string" }, "startedAt": { "type": "string", "format": "date-time" }, "affected": { "type": "integer" } } } },
+          "infrastructure": { "type": "array", "items": { "type": "object", "properties": { "layer": { "type": "string" }, "name": { "type": "string" }, "slug": { "type": ["string", "null"] }, "services": { "type": "integer" } } } },
+          "sharedWith": { "type": "array", "description": "Services that share hosting, CDN or DNS with this page's services (what fails together).", "items": { "type": "object", "properties": { "slug": { "type": "string" }, "name": { "type": "string" }, "via": { "type": "string" } } } },
+          "lastIssue": { "type": ["object", "null"], "properties": { "name": { "type": "string" }, "startedAt": { "type": "string", "format": "date-time" }, "recoveredAt": { "type": "string", "format": "date-time" } } },
+          "issues30d": { "type": "integer", "description": "Finished outage episodes (two or more failed sweeps in a row) in the last 30 days." }
+        }
+      },
+      "PaymentProblem": {
+        "type": "object",
+        "description": "RFC 9457 problem details returned with HTTP 402.",
+        "properties": {
+          "type": { "type": "string", "example": "https://paymentauth.org/problems/payment-required" },
+          "title": { "type": "string", "example": "Payment Required" },
+          "status": { "type": "integer", "example": 402 },
+          "detail": { "type": "string" },
+          "challengeId": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/_api/status/page": {
+      "get": {
+        "tags": ["Status"],
+        "operationId": "getStatusPage",
+        "summary": "Is X down right now?",
+        "description": "Live state, outage streak start, 30-day outage history, infrastructure and 'fails together' list for one provider, service or brand. This is the data behind https://shadowalpha.online/status/{slug} (German: /de/status/{slug}).\n\nVerdict rules used on the website: an open provider incident affecting the services → down; one service failing two checks → not answering; several endpoints failing → partial; otherwise operational.",
+        "parameters": [ { "$ref": "#/components/parameters/slug" } ],
+        "responses": {
+          "200": {
+            "description": "Status page data. kind = unknown when nothing matches the slug.",
+            "headers": { "Cache-Control": { "schema": { "type": "string" }, "description": "public, s-maxage=60" } },
+            "content": { "application/json": {
+              "schema": { "$ref": "#/components/schemas/StatusPage" },
+              "example": { "slug": "stripe-api", "kind": "service", "name": "Stripe API", "category": "Payments & fintech", "checkedAt": "2026-10-14T17:06:40.539Z", "rows": [ { "id": "api-stripe-com", "name": "Stripe API", "category": "Payments & fintech", "analyzedHost": "api.stripe.com", "hostingProvider": "Amazon Web Services", "hostingRegion": null, "hostingCountry": "US", "cdn": null, "dnsProvider": "AWS Route 53", "emailProvider": "Google Workspace", "state": "up", "httpStatus": 404, "latencyMs": 61, "error": null, "uptime24h": 1, "samples24h": 288, "via": [], "slug": "stripe-api", "since": null } ], "incidents": [], "infrastructure": [ { "layer": "hosting", "name": "Amazon Web Services", "slug": "aws", "services": 1 } ], "sharedWith": [ { "slug": "adyen-checkout", "name": "Adyen Checkout", "via": "hosting · Amazon Web Services" } ], "lastIssue": null, "issues30d": 0 }
+            } }
+          },
+          "503": { "description": "Live data temporarily unavailable.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/_api/radar/status": {
+      "get": {
+        "tags": ["Status"],
+        "operationId": "getRadarStatus",
+        "summary": "Full live radar",
+        "description": "Every monitored service with live state and infrastructure, open and recent provider incidents with blast radius, a 24 h error timeline, recent state changes, provider and category summaries and concentration shares per layer. About 1.3 MB uncompressed; send Accept-Encoding: gzip (about 90 KB on the wire). Refreshed every 5 minutes.",
+        "responses": {
+          "200": {
+            "description": "status = warming_up until the first sweep after a deploy, then live.",
+            "content": { "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string", "enum": ["live", "warming_up"] },
+                  "run": { "type": "object", "properties": { "runId": { "type": "string" }, "at": { "type": "string", "format": "date-time" }, "total": { "type": "integer" }, "up": { "type": "integer" }, "degraded": { "type": "integer" }, "down": { "type": "integer" }, "vantageSuspect": { "type": "boolean", "description": "More than 50 % of probes failed at once: our node is suspect and no incidents are opened or resolved." }, "medianLatencyMs": { "type": ["integer", "null"] } } },
+                  "services": { "type": "array", "items": { "$ref": "#/components/schemas/Service" } },
+                  "incidents": { "type": "array", "items": { "$ref": "#/components/schemas/Incident" } },
+                  "timeline": { "type": "array", "items": { "type": "object", "properties": { "bucket": { "type": "string" }, "checks": { "type": "integer" }, "failed": { "type": "integer" }, "services": { "type": "integer" } } } },
+                  "events": { "type": "array", "description": "Recent state changes.", "items": { "type": "object" } },
+                  "providers": { "type": "array", "items": { "type": "object" } },
+                  "concentration": { "type": "object", "description": "Share of mapped services per provider for hosting, cdn, dns and email." },
+                  "categories": { "type": "array", "items": { "type": "object" } }
+                }
+              },
+              "example": { "status": "live", "run": { "runId": "2026-10-14T17:00:38.684Z", "at": "2026-10-14T17:00:38.684Z", "total": 3174, "up": 3165, "degraded": 3, "down": 6, "vantageSuspect": false, "medianLatencyMs": 574 }, "services": [ { "id": "api-anthropic-com", "name": "Anthropic API", "category": "AI APIs", "hostingProvider": "Anthropic", "hostingRegion": null, "hostingCountry": "US", "cdn": null, "dnsProvider": "Cloudflare", "emailProvider": "Google Workspace", "analyzedHost": "api.anthropic.com", "state": "up", "httpStatus": 404, "latencyMs": 183, "error": null, "uptime24h": 1, "samples24h": 288 } ], "incidents": [], "timeline": [], "events": [], "providers": [], "concentration": {}, "categories": [] }
+            } }
+          }
+        }
+      }
+    },
+    "/_api/radar/global": {
+      "get": {
+        "tags": ["Status"],
+        "operationId": "getWorldwideChecks",
+        "summary": "Down everywhere or only regionally?",
+        "description": "Every 30 minutes, infrastructure anchors and every service the main node sees failing are re-checked from one probe on each of six continents (NA, SA, EU, AS, OC, AF) via the Globalping network. regionalOutages lists services that fail on some continents and answer on others.",
+        "responses": { "200": { "description": "Latest worldwide run.", "content": { "application/json": {
+          "schema": { "type": "object", "properties": { "runAt": { "type": "string", "format": "date-time" }, "continents": { "type": "array", "items": { "type": "object", "properties": { "code": { "type": "string" }, "name": { "type": "string" }, "reachable": { "type": "integer" }, "total": { "type": "integer" }, "medianMs": { "type": ["integer", "null"] }, "availability24h": { "type": ["number", "null"] } } } }, "probes": { "type": "array", "items": { "type": "object" } }, "targets": { "type": "array", "items": { "type": "object" } }, "regionalOutages": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "downIn": { "type": "array", "items": { "type": "string" } }, "upIn": { "type": "array", "items": { "type": "string" } } } } } } },
+          "example": { "runAt": "2026-10-14T16:37:39.167Z", "continents": [ { "code": "EU", "name": "Europe", "reachable": 10, "total": 10, "medianMs": 87, "availability24h": 1 } ], "probes": [], "targets": [], "regionalOutages": [ { "id": "web-feishu-cn", "name": "feishu.cn", "downIn": ["North America"], "upIn": ["Europe"] } ] }
+        } } } }
+      }
+    },
+    "/_api/radar/outlook": {
+      "get": {
+        "tags": ["Status"],
+        "operationId": "getRiskOutlook",
+        "summary": "Early warnings, certificate and domain expiry",
+        "description": "Gray-failure early warnings (rule ew-v2) with their scored track record, TLS certificates about to expire for every monitored endpoint, registry (RDAP) domain expiry and infrastructure changes detected on re-mapping. The retired rule ew-v1 and its record stay in the response.",
+        "responses": { "200": { "description": "Outlook.", "content": { "application/json": {
+          "schema": { "type": "object", "properties": { "generatedAt": { "type": "string", "format": "date-time" }, "warnings": { "type": "array", "items": { "type": "object" } }, "trackRecord": { "type": "object", "properties": { "warnings": { "type": "integer" }, "scored": { "type": "integer" }, "confirmed": { "type": "integer" }, "precision": { "type": ["number", "null"] }, "medianLeadMinutes": { "type": ["number", "null"] } } }, "certificates": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "host": { "type": "string" }, "certNotAfter": { "type": "string", "format": "date-time" }, "certIssuer": { "type": "string" }, "daysLeft": { "type": "integer" }, "risk": { "type": "string", "enum": ["expired", "critical", "overdue", "window"] } } } }, "domains": { "type": "array", "items": { "type": "object" } }, "changes": { "type": "array", "items": { "type": "object" } }, "coverage": { "type": "object" } } },
+          "example": { "generatedAt": "2026-10-14T17:02:48.341Z", "warnings": [], "trackRecord": { "warnings": 0, "scored": 0, "confirmed": 0, "precision": null, "medianLeadMinutes": null }, "certificates": [ { "name": "doz.pl", "host": "doz.pl", "certNotAfter": "2026-10-16T23:59:59.000Z", "certIssuer": "DigiCert Inc", "daysLeft": 2, "risk": "critical" } ], "domains": [], "changes": [], "coverage": { "certs": 3170, "domains": 1152 } }
+        } } } }
+      }
+    },
+    "/_api/upstream/signals": {
+      "get": {
+        "tags": ["Status"],
+        "operationId": "getUpstreamSignals",
+        "summary": "Shared-provider signals from official status pages",
+        "description": "Rule cs-v1: when two or more companies that share a cloud region, hosting provider, CDN or DNS provider declare incidents on their own status pages within 60 minutes and the chance of that by coincidence is below 1 in 1,000 (Poisson-binomial on each company's 84-day incident rate, hour-of-week adjusted), the shared provider is flagged. Includes active signals, the last 30 days and the 84-day backtest with recall against provider records.",
+        "responses": { "200": { "description": "Signals and track record.", "content": { "application/json": { "schema": { "type": "object", "properties": { "rule": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "active": { "type": "array", "items": { "type": "object" } }, "events": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "openedAt": { "type": "string" }, "p": { "type": "number" }, "tier": { "type": "string", "enum": ["confirmed", "named", "statistical"] }, "candidates": { "type": "array", "items": { "type": "object" } }, "companies": { "type": "array", "items": { "type": "object" } } } } }, "backtest": { "type": "object" } } } } } } }
+      }
+    },
+    "/_api/search": {
+      "get": {
+        "tags": ["Search"],
+        "operationId": "search",
+        "summary": "Search everything",
+        "description": "Finds services (with live state), providers (with their incident history), cloud regions, provider and status-page incidents, SEC customer-concentration filings and public AI agents for a name, provider, region code or domain. For a full domain that is not monitored, a live infrastructure scan runs (at most 30 per client per hour; quick=1 never scans).",
+        "parameters": [
+          { "name": "q", "in": "query", "required": true, "description": "At least 2 characters: company, service, provider, region (eu-central-1) or domain (stripe.com).", "schema": { "type": "string", "minLength": 2, "maxLength": 80, "example": "cloudflare" } },
+          { "name": "quick", "in": "query", "required": false, "description": "1 = fast type-ahead mode: 5 results per section, no domain scan.", "schema": { "type": "string", "enum": ["1"] } }
+        ],
+        "responses": {
+          "200": { "description": "Structured results.", "content": { "application/json": {
+            "schema": { "type": "object", "properties": { "q": { "type": "string" }, "services": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "slug": { "type": "string" }, "name": { "type": "string" }, "category": { "type": "string" }, "domain": { "type": "string" }, "state": { "$ref": "#/components/schemas/State" }, "uptime24h": { "type": ["number", "null"] }, "hosting": { "type": ["string", "null"] }, "region": { "type": ["string", "null"] }, "cdn": { "type": ["string", "null"] }, "dns": { "type": ["string", "null"] }, "email": { "type": ["string", "null"] } } } }, "servicesTotal": { "type": "integer" }, "providers": { "type": "array", "items": { "type": "object" } }, "regions": { "type": "array", "items": { "type": "object" } }, "incidents": { "type": "array", "items": { "type": "object" } }, "companies": { "type": "array", "items": { "type": "object" } }, "agents": { "type": "object" }, "domain": { "type": ["object", "null"] }, "domainNote": { "type": ["string", "null"] } } },
+            "example": { "q": "cloudflare", "services": [ { "id": "api-cloudflare-com", "slug": "cloudflare-api", "name": "Cloudflare API", "category": "Developer platforms", "domain": "api.cloudflare.com", "state": "up", "uptime24h": 1, "hosting": null, "region": null, "cdn": "Cloudflare", "dns": "Cloudflare", "email": null } ], "servicesTotal": 6, "providers": [ { "name": "Cloudflare", "layers": ["cdn"], "services": 682, "slug": "cloudflare", "incidents90d": 57, "lastIncident": { "title": "Increased HTTP Errors in London (LHR)", "at": "2026-10-14T07:43:00.000Z" } } ], "regions": [], "incidents": [], "companies": [], "companiesTotal": 0, "agents": { "total": 37, "sample": [] }, "domain": null, "domainNote": null }
+          } } },
+          "400": { "description": "Query shorter than 2 characters.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/_api/vendors/scan_start": {
+      "post": {
+        "tags": ["Vendor risk"],
+        "operationId": "startVendorScan",
+        "summary": "Start a vendor portfolio scan",
+        "description": "Accepts up to 300 vendor domains (CSV/TSV/semicolon or one per line; a name column and a 'critical' column are recognised). The scan runs in the background, usually 1–3 minutes; poll GET /_api/vendors/scan. Results are kept 30 days. Limits: 4 scans per client per hour, 40 per hour in total.",
+        "requestBody": { "required": true, "content": { "application/json": {
+          "schema": { "type": "object", "required": ["text"], "properties": { "text": { "type": "string", "minLength": 3, "maxLength": 200000, "description": "Pasted list or file contents." }, "company": { "type": "string", "maxLength": 120 }, "email": { "type": "string", "maxLength": 200, "description": "Optional: email the link when the scan is done." } } },
+          "example": { "text": "name,domain,critical\nStripe,stripe.com,yes\nSalesforce,salesforce.com,yes\nSlack,slack.com,no", "company": "Example Fintech" }
+        } } },
+        "responses": {
+          "200": { "description": "Scan queued.", "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string" }, "accepted": { "type": "integer" }, "rejected": { "type": "array", "items": { "type": "string" } }, "truncated": { "type": "integer" } } }, "example": { "id": "a4ybMBANAg41W7hFs-o6xA", "accepted": 3, "rejected": [], "truncated": 0 } } } },
+          "400": { "description": "No valid domains or invalid email.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "description": "Rate limit reached.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/_api/vendors/scan": {
+      "get": {
+        "tags": ["Vendor risk"],
+        "operationId": "getVendorScan",
+        "summary": "Get scan results",
+        "description": "Progress and results of a vendor scan: one row per vendor (hosting, category, cloud region, country, confidence, CDN, whether the origin is hidden, DNS, email, TLS issuer and expiry) plus a portfolio summary (share per provider and layer, critical vendors, failure scenarios, expiring certificates and domains) and the provider incident history.",
+        "parameters": [ { "name": "id", "in": "query", "required": true, "schema": { "type": "string", "example": "a4ybMBANAg41W7hFs-o6xA" } } ],
+        "responses": {
+          "200": { "description": "status = queued | running | done | failed.", "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string" }, "status": { "type": "string" }, "total": { "type": "integer" }, "done": { "type": "integer" }, "rows": { "type": "array", "items": { "type": "object" } }, "summary": { "type": "object" }, "providerIncidents": { "type": "array", "items": { "type": "object" } }, "expiresAt": { "type": "string", "format": "date-time" } } },
+            "example": { "id": "a4ybMBANAg41W7hFs-o6xA", "status": "done", "total": 16, "done": 16, "rows": [ { "name": "Stripe", "domain": "stripe.com", "critical": true, "status": "ok", "host": "api.stripe.com", "hosting": "Amazon Web Services", "hostingCategory": "cloud", "region": null, "country": "US", "confidence": "high", "cdn": null, "originHidden": false, "dns": "AWS Route 53", "email": "Google Workspace", "certIssuer": "DigiCert", "certNotAfter": "2026-12-10T23:59:59.000Z" } ], "summary": { "vendors": 16, "critical": 8, "hiddenOrigins": 1, "distinctHosting": 3 }, "expiresAt": "2026-11-12T14:46:40.175Z" } } } },
+          "404": { "description": "Unknown or expired scan.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/_api/vendors/export": {
+      "get": {
+        "tags": ["Vendor risk"],
+        "operationId": "exportVendorScan",
+        "summary": "Download scan as CSV",
+        "description": "One row per vendor with every mapped field, including network_owner_country. Suitable for the DORA register of information working file.",
+        "parameters": [ { "name": "id", "in": "query", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "CSV file.", "content": { "text/csv": { "schema": { "type": "string" } } } }, "404": { "description": "Unknown or expired scan." } }
+      }
+    },
+    "/_api/report/internet": {
+      "get": {
+        "tags": ["Research & open data"],
+        "operationId": "getInternetReport",
+        "summary": "Who runs the internet? (daily report)",
+        "description": "Dated snapshot: blast radius per provider (share of mapped services depending on it via hosting, CDN or DNS), hosting/CDN/DNS/email concentration, cloud regions, single-vendor stacks, sector dependencies, SEC revenue concentration and radar reliability.",
+        "responses": { "200": { "description": "Report.", "content": { "application/json": { "schema": { "type": "object" }, "example": { "title": "Who runs the internet? Hidden dependencies behind critical services", "asOf": "2026-10-14", "coverage": { "servicesMapped": 3136, "probes7d": 800205, "behindCdn": 1539 }, "blastRadius": [ { "name": "AWS", "share": 0.3087, "services": 968, "viaHosting": 685, "viaCdn": 412, "viaDns": 739 } ], "singleVendor": { "share": 0.1875, "services": 588 } } } } } }
+      }
+    },
+    "/_api/research/overview": {
+      "get": {
+        "tags": ["Research & open data"],
+        "operationId": "getResearchOverview",
+        "summary": "Research results (recomputed hourly)",
+        "description": "Versioned results of the shared-fate study (sf-v1, permutation null, Holm-corrected), radar validation against official incidents (val-v1, recall/precision with 95 % intervals, misses listed) and concentration (conc-v1, Herfindahl-Hirschman per layer).",
+        "responses": { "200": { "description": "Overview.", "content": { "application/json": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/_api/research/outage_impact": {
+      "get": {
+        "tags": ["Research & open data"],
+        "operationId": "getOutageImpactStudy",
+        "summary": "Do outages move the provider's stock?",
+        "description": "Pre-registered event study of 26 major public outages (2011–2025), SPY market model. Result: not supported — no significant abnormal return on the day or after it. Do not use outage detections as trading signals.",
+        "responses": { "200": { "description": "Events, method and results.", "content": { "application/json": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/_api/research/customer_momentum": {
+      "get": {
+        "tags": ["Research & open data"],
+        "operationId": "getCustomerMomentumStudy",
+        "summary": "Do suppliers follow their big customers?",
+        "description": "Daily adaptation of Cohen & Frazzini (2008) on SEC customer links: suppliers react on the same day as a customer's ≥3σ shock, but the post-event drift is not significantly larger than for random unlinked suppliers.",
+        "responses": { "200": { "description": "Study results.", "content": { "application/json": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/_api/research/dataset": {
+      "get": {
+        "tags": ["Research & open data"],
+        "operationId": "getOpenDataset",
+        "summary": "Open measurement dataset (CSV, CC BY 4.0)",
+        "description": "Rolling tables; every row carries its own timestamps. Cite as: ShadowGraph Open Measurement Dataset, shadowalpha.online, CC BY 4.0.",
+        "parameters": [
+          { "name": "table", "in": "query", "required": true, "schema": { "type": "string", "enum": ["services", "sweeps", "episodes", "hourly", "status_incidents", "provider_incidents", "upstream_signals"] } },
+          { "name": "days", "in": "query", "required": false, "description": "Window for sweeps and hourly (1–31).", "schema": { "type": "integer", "minimum": 1, "maximum": 31, "default": 7 } }
+        ],
+        "responses": { "200": { "description": "CSV.", "content": { "text/csv": { "schema": { "type": "string" }, "example": "service_id,name,category,probe_url,organisation,hosting_provider,hosting_region,hosting_country,cdn,dns_provider,email_provider,mapped_at\napi-stripe-com,Stripe API,Payments & fintech,https://api.stripe.com/,stripe.com,Amazon Web Services,,US,,AWS Route 53,Google Workspace,2026-10-13T16:05:12.000Z\n" } } }, "400": { "description": "Unknown table." } }
+      }
+    },
+    "/_api/dataset/sample": {
+      "get": {
+        "tags": ["Dependency data"],
+        "operationId": "getDependencySample",
+        "summary": "Supply-chain dependency sample (free)",
+        "description": "25 customer → supplier revenue dependencies from the latest SEC annual filings (10-K, 20-F, 40-F, inline XBRL ConcentrationRiskPercentage1). attribution = official (customer and share XBRL-tagged) or inferred (share tagged, name from the same filing's text, kept as evidence).",
+        "parameters": [ { "name": "format", "in": "query", "required": false, "schema": { "type": "string", "enum": ["json", "csv"], "default": "json" } } ],
+        "responses": { "200": { "description": "Sample rows and dataset stats.", "content": {
+          "application/json": { "schema": { "type": "object" }, "example": { "stats": { "relationships": 331, "official": 316, "suppliers": 210, "customers": 204, "latestFiling": "2026-09-30" }, "price": "$99 / month", "sampleSize": 25, "rows": [ { "customer": "Apple", "supplier": "CIRRUS LOGIC, INC.", "supplierTicker": "CRUS", "revenueShare": 0.91, "fiscalPeriodEnd": "2026-03-28", "form": "10-K", "attribution": "official", "sourceUrl": "https://www.sec.gov/Archives/edgar/data/772406/000077240626000018/crus-20260328.htm" } ] } },
+          "text/csv": { "schema": { "type": "string" } }
+        } } }
+      }
+    },
+    "/_api/dataset/full": {
+      "get": {
+        "tags": ["Dependency data"],
+        "operationId": "getDependencyDataset",
+        "summary": "Full supply-chain dependency dataset",
+        "description": "All relationships, refreshed weekly. Subscription $99/month at https://shadowalpha.online/data.",
+        "security": [ { "datasetKey": [] } ],
+        "parameters": [ { "name": "format", "in": "query", "required": false, "schema": { "type": "string", "enum": ["json", "csv"], "default": "json" } } ],
+        "responses": { "200": { "description": "Dataset.", "content": { "application/json": { "schema": { "type": "object" } }, "text/csv": { "schema": { "type": "string" } } } }, "401": { "description": "Missing or invalid key.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      }
+    },
+    "/_api/agents/globe": {
+      "get": {
+        "tags": ["AI agents"],
+        "operationId": "getAgentGlobe",
+        "summary": "Public AI agents and their reachability",
+        "description": "Public MCP and A2A agent endpoints from the official MCP Registry and the A2A Registry, placed by hosting location (cloud region or approximate city; edge-hosted endpoints are counted but not placed), with the hourly reachability check (one HTTPS request per host; any answer below 500 counts as reachable). Also the requests agents send to ShadowGraph (city-level, no IP addresses stored; own tests excluded) and per-step counts for the last 7 days.",
+        "responses": { "200": { "description": "Agent layer.", "content": { "application/json": { "schema": { "type": "object", "properties": { "hubs": { "type": "array", "items": { "type": "object" } }, "signals": { "type": "array", "items": { "type": "object" } }, "feed": { "type": "array", "items": { "type": "object" } }, "probe": { "type": ["object", "null"] }, "totals": { "type": "object" } } } } } } }
+      }
+    },
+    "/_api/mcp": {
+      "post": {
+        "tags": ["AI agents"],
+        "operationId": "mcp",
+        "summary": "MCP server (Streamable HTTP)",
+        "description": "JSON-RPC 2.0 MCP endpoint, protocol versions 2026-07-28 and 2025-11-25. Free tools: shadowgraph_market_recap, shadowgraph_company_filings, shadowgraph_eu_tenders, shadowgraph_free_preview, shadowgraph_service_info. Paid tools ($0.50–$5.00) use the MPP MCP binding: an unpaid tools/call returns JSON-RPC error -32042 with error.data.challenges; retry with params._meta[\"org.paymentauth/credential\"]; the receipt is returned in result._meta[\"org.paymentauth/receipt\"]. For 2026-07-28 send MCP-Protocol-Version, Mcp-Method and (for tools/call) Mcp-Name headers.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["jsonrpc", "method"], "properties": { "jsonrpc": { "const": "2.0" }, "id": { "type": ["string", "integer"] }, "method": { "type": "string" }, "params": { "type": "object" } } }, "example": { "jsonrpc": "2.0", "id": 1, "method": "tools/list" } } } },
+        "responses": { "200": { "description": "JSON-RPC response or error." } }
+      }
+    },
+    "/_api/a2a": {
+      "post": {
+        "tags": ["AI agents"],
+        "operationId": "a2a",
+        "summary": "A2A agent (JSON-RPC, v1.0)",
+        "description": "A2A v1.0 JSON-RPC binding; method SendMessage. Agent card: /.well-known/agent-card.json. Paid skills answer with HTTP 402 and a Payment challenge.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object" }, "example": { "jsonrpc": "2.0", "id": 1, "method": "SendMessage", "params": { "message": { "role": "ROLE_USER", "messageId": "m1", "parts": [ { "text": "What moved in markets today?" } ] } } } } } },
+        "responses": { "200": { "description": "JSON-RPC response." }, "402": { "description": "Payment required for a paid skill.", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/PaymentProblem" } } } } }
+      }
+    },
+    "/_api/agent_preview": {
+      "get": {
+        "tags": ["AI agents"],
+        "operationId": "getAgentPreview",
+        "summary": "Free preview for agents",
+        "description": "Compact live coverage, relationship graph size and the top measured lead/lag relationship, plus the recommended first paid call.",
+        "responses": { "200": { "description": "Preview.", "content": { "application/json": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/_api/free_query": {
+      "post": {
+        "tags": ["AI agents"],
+        "operationId": "freeQuery",
+        "summary": "Free factual query",
+        "description": "Compact, verifiable answers: global market recap, recent SEC filings by ticker, or EU TED procurement search.",
+        "requestBody": { "required": true, "content": { "application/json": {
+          "schema": { "type": "object", "required": ["type"], "properties": { "type": { "type": "string", "enum": ["market_recap", "company_filings", "eu_tenders"] }, "symbol": { "type": "string" }, "keyword": { "type": "string" }, "country": { "type": "string", "description": "Two-letter buyer country for eu_tenders." }, "limit": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 } } },
+          "examples": { "marketRecap": { "value": { "type": "market_recap", "limit": 5 } }, "companyFilings": { "value": { "type": "company_filings", "symbol": "NVDA", "limit": 5 } }, "euTenders": { "value": { "type": "eu_tenders", "keyword": "data center", "country": "DE", "limit": 5 } } }
+        } } },
+        "responses": { "200": { "description": "Answer with sources.", "content": { "application/json": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/_api/machine/intelligence": {
+      "post": {
+        "tags": ["Machine intelligence (paid)"],
+        "operationId": "purchaseIntelligence",
+        "summary": "Buy one intelligence result",
+        "description": "Modes: hidden_chain $0.50, alpha $0.75, opportunity $1.00, global_brief $2.50, deep_research $5.00. The first request returns 402 with WWW-Authenticate: Payment (method stripe, intent charge, request = base64url JSON with amount in cents). Retry the identical request with Authorization: Payment <credential>. A failed payment returns a new challenge. Results are probabilistic intelligence; inferred edges and statistical lead/lag are hypotheses, not proof.",
+        "security": [ { "mpp": [] } ],
+        "x-payment-info": { "price": { "mode": "dynamic", "currency": "USD", "min": "0.50", "max": "5.00" }, "protocols": [ { "mpp": { "method": "stripe", "intent": "charge", "currency": "usd" } } ] },
+        "requestBody": { "required": true, "content": { "application/json": {
+          "schema": { "type": "object", "required": ["mode"], "additionalProperties": false, "properties": { "mode": { "type": "string", "enum": ["hidden_chain", "alpha", "opportunity", "global_brief", "deep_research"], "default": "hidden_chain" } } },
+          "example": { "mode": "hidden_chain" }
+        } } },
+        "responses": {
+          "200": { "description": "Paid result.", "headers": { "Payment-Receipt": { "schema": { "type": "string" }, "description": "Base64url-encoded MPP receipt." } }, "content": { "application/json": { "schema": { "type": "object", "required": ["requestId", "priceUsd", "intelligence"], "properties": { "requestId": { "type": "string" }, "priceUsd": { "type": "number" }, "intelligence": { "type": "object" } } } } } },
+          "402": { "description": "Payment required.", "headers": { "WWW-Authenticate": { "schema": { "type": "string" }, "description": "Payment id=\"…\", realm=\"…\", method=\"stripe\", intent=\"charge\", request=\"…\", description=\"…\", expires=\"…\"" } }, "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/PaymentProblem" } } } }
+        }
+      }
+    },
+    "/_api/payment_status": {
+      "get": {
+        "tags": ["Machine intelligence (paid)"],
+        "operationId": "getPaymentStatus",
+        "summary": "Payment readiness",
+        "description": "Whether machine payments can be settled right now. Never exposes credentials.",
+        "responses": { "200": { "description": "Readiness.", "content": { "application/json": { "schema": { "type": "object", "properties": { "connected": { "type": "boolean" }, "mode": { "type": "string" }, "mppReady": { "type": "boolean" }, "message": { "type": "string" } } }, "example": { "connected": true, "mode": "restricted", "mppReady": true, "message": "Stripe key authenticated successfully." } } } } }
+      }
+    },
+    "/_api/global_official": { "get": { "tags": ["Markets & official data"], "operationId": "getOfficialSignals", "summary": "SEC EDGAR filings and EU TED notices", "description": "Recent official disclosures and procurement notices, normalised. Cached 5 minutes.", "responses": { "200": { "description": "Disclosures and procurement.", "content": { "application/json": { "schema": { "type": "object", "properties": { "fetchedAt": { "type": "string" }, "disclosures": { "type": "array", "items": { "type": "object" } }, "procurement": { "type": "array", "items": { "type": "object" } } } } } } } } } },
+    "/_api/global_news": { "get": { "tags": ["Markets & official data"], "operationId": "getNews", "summary": "Thematic news", "description": "AI, telecom, energy, banking and logistics news feeds.", "responses": { "200": { "description": "News items.", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/_api/global_markets": { "get": { "tags": ["Markets & official data"], "operationId": "getMarkets", "summary": "Market data", "description": "Price, 1-day and 5-day change and volume ratio for a global watchlist. Cached 2 minutes.", "responses": { "200": { "description": "Quotes.", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/_api/global_infra": { "get": { "tags": ["Markets & official data"], "operationId": "getInfrastructure", "summary": "PeeringDB facilities and exchanges", "description": "Data centres and internet exchanges across major hubs.", "responses": { "200": { "description": "Facilities.", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/_api/graph": { "get": { "tags": ["Markets & official data"], "operationId": "getRelationshipGraph", "summary": "Relationship graph", "description": "Evidence-backed nodes and edges; inferred edges are labelled inferred.", "responses": { "200": { "description": "Graph.", "content": { "application/json": { "schema": { "type": "object", "properties": { "generatedAt": { "type": "string" }, "stats": { "type": "object", "properties": { "nodes": { "type": "integer" }, "edges": { "type": "integer" }, "officialEdges": { "type": "integer" }, "inferredEdges": { "type": "integer" } } }, "nodes": { "type": "array", "items": { "type": "object" } }, "edges": { "type": "array", "items": { "type": "object" } } } } } } } } } },
+    "/_api/price_lag": { "get": { "tags": ["Markets & official data"], "operationId": "getPriceLag", "summary": "Validated lead/lag detector", "description": "Only relationships that survive Benjamini-Hochberg FDR (5 %) and held-out out-of-sample validation. Fields: leader, follower, lagDays, direction, trainCorr, trainQ, testCorr, testP, zeroLagCorr, stability, windows. Empty when nothing survives.", "responses": { "200": { "description": "Method, sample and surviving signals.", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/_api/leads": { "get": { "tags": ["Markets & official data"], "operationId": "getLeads", "summary": "Candidate commercial leads", "description": "Supplier opportunities derived from procurement and disclosure evidence. Candidates, not confirmed bids.", "responses": { "200": { "description": "Leads.", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/_api/economic_intelligence": { "get": { "tags": ["Markets & official data"], "operationId": "getEconomicIntelligence", "summary": "Economic research workspace", "description": "Conditional event chains, exposure candidates, SEC supplier links, research journals and prospective paper results. Scores are not success probabilities.", "responses": { "200": { "description": "Research state.", "content": { "application/json": { "schema": { "type": "object" } } } }, "503": { "description": "Temporarily unavailable." } } } },
+    "/_api/event_execution": { "get": { "tags": ["Markets & official data"], "operationId": "getEventExecution", "summary": "Research-only execution constraints", "description": "Historical replay with costs, observed depth estimates and blocked execution reasons. No live trading, no profit claim.", "responses": { "200": { "description": "Research output.", "content": { "application/json": { "schema": { "type": "object" } } } }, "503": { "description": "Temporarily unavailable." } } } },
+    "/_api/health": {
+      "get": {
+        "tags": ["Service"],
+        "operationId": "getHealth",
+        "summary": "Health and data freshness",
+        "description": "Whether the cached data surfaces are available and how old each snapshot is.",
+        "responses": {
+          "200": { "description": "ok or degraded.", "content": { "application/json": { "schema": { "type": "object" }, "example": { "status": "ok", "service": "ShadowGraph Market Intelligence", "checkedAt": "2026-10-14T17:02:48.888Z", "snapshots": { "graph": { "available": true, "ageSeconds": 240 }, "globalMarkets": { "available": true, "ageSeconds": 35 } } } } } },
+          "503": { "description": "Too few snapshots available." }
+        }
+      }
+    }
+  }
+}

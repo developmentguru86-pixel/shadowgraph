@@ -1,0 +1,19 @@
+.chart { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 4px; align-items: end; height: 220px; padding-top: var(--spacing-4); border-top: 1px solid var(--border); }
+.col { display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; min-width: 0; }
+.val { font-family: var(--font-family-monospace); font-size: 0.66rem; color: var(--foreground); height: 14px; }
+.track { position: relative; flex: 1; width: 100%; }
+.bar { position: absolute; left: 12%; right: 12%; bottom: 0; background: var(--warning); border-radius: 2px 2px 0 0; min-height: 1px; }
+.base { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid var(--muted-foreground); }
+.hour { font-family: var(--font-family-monospace); font-size: 0.62rem; color: var(--muted-foreground); height: 14px; }
+.legend { display: flex; gap: var(--spacing-6); flex-wrap: wrap; font-family: var(--font-family-monospace); font-size: 0.68rem; color: var(--muted-foreground); margin: var(--spacing-3) 0 var(--spacing-8); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.lgBar { width: 10px; height: 10px; background: var(--warning); border-radius: 2px; }
+.lgBase { width: 14px; height: 0; border-top: 2px solid var(--muted-foreground); }
+.verdict { display: flex; gap: var(--spacing-3); align-items: baseline; flex-wrap: wrap; color: var(--secondary-foreground); font-size: 0.95rem; line-height: 1.6; font-weight: 300; margin: var(--spacing-6) 0 0; max-width: 820px; }
+.limits { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); max-width: 860px; }
+.limits li { padding: var(--spacing-4) 0; border-bottom: 1px solid var(--border); color: var(--secondary-foreground); line-height: 1.6; font-weight: 300; }
+.limits b { color: var(--foreground); font-weight: 500; margin-right: 6px; }
+.download { height: 42px; padding: 0 18px; border-radius: var(--radius-full); border: 1px solid var(--border-strong); background: var(--foreground); color: var(--background); font: inherit; font-weight: 500; font-size: 0.9rem; cursor: pointer; }
+.download:hover { opacity: 0.9; }
+.download:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (max-width: 640px) { .chart { gap: 2px; height: 180px; } .val { font-size: 0.56rem; } }

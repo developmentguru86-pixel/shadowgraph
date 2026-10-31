@@ -1,0 +1,22 @@
+.page { max-width: 1180px; margin: 0 auto; padding: var(--spacing-12) var(--spacing-6) 0; color: var(--foreground); font-family: var(--font-family-base); }
+.top { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-4); margin-bottom: var(--spacing-8); }
+.crumbs { display: flex; gap: 8px; font-size: 0.82rem; color: var(--muted-foreground); }
+.crumbs a { color: var(--secondary-foreground); text-decoration: none; }
+.crumbs a:hover { color: var(--foreground); }
+.lang { flex: none; font-family: var(--font-family-monospace); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--secondary-foreground); text-decoration: none; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-full); }
+.eyebrow { font-family: var(--font-family-monospace); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-foreground); }
+.h1 { font-family: var(--font-family-display); font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.05; letter-spacing: -0.02em; margin: var(--spacing-3) 0 var(--spacing-4); }
+.lead { color: var(--secondary-foreground); font-weight: 300; line-height: 1.6; max-width: 640px; margin: 0; }
+.muted { color: var(--muted-foreground); font-size: 0.9rem; }
+.az { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--spacing-8) 0; }
+.az a { min-width: 36px; height: 36px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-family-monospace); font-size: 0.82rem; color: var(--secondary-foreground); text-decoration: none; }
+.az a:hover { color: var(--foreground); border-color: var(--border-strong); }
+.az a.azOn { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
+.az a.azEmpty { opacity: 0.4; }
+.list { list-style: none; padding: 0; margin: 0; columns: 4 220px; column-gap: var(--spacing-8); }
+.list li { break-inside: avoid; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.list a { color: var(--secondary-foreground); text-decoration: none; font-size: 0.9rem; }
+.list a:hover { color: var(--foreground); }
+.back { margin: var(--spacing-12) 0 var(--spacing-16); font-size: 0.9rem; }
+.back a { color: var(--secondary-foreground); text-decoration: none; }
+@media (max-width: 520px) { .page { padding: var(--spacing-8) var(--spacing-4) 0; } .az a { min-width: 32px; height: 32px; } }

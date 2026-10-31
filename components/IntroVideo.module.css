@@ -1,0 +1,5 @@
+.frame { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: #F5F7FB url("/_cdn/static/shadowgraph-intro-light-poster.jpg") center / cover no-repeat; }
+.video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
+@media (max-width: 700px) {
+  .frame { aspect-ratio: 4 / 5; background-image: url("/_cdn/static/shadowgraph-intro-light-mobile-poster.jpg"); }
+}

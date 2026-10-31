@@ -1,0 +1,25 @@
+import {eventTrading,type Book,type EventSignal} from "./eventTrading";
+describe("eventTrading safety and replay",()=>{
+ const now=Date.parse("2026-01-20T12:00:00Z");
+ const book=(venue:string,price:number):Book=>({venue,symbol:"BTC/USD",currency:"USD",observedAt:new Date(now).toISOString(),sourceAt:null,trading:"online",asks:[[price,1]],bids:[[price-1,1]],feeBps:1,feeVerified:true});
+ const balances={A:{usd:10000,base:1,verified:true,withdrawals:"enabled" as const},B:{usd:10000,base:1,verified:true,withdrawals:"enabled" as const}};
+ const route=(a=book("A",100),b=book("B",110))=>eventTrading.arbitrage(a,b,1,now,balances,0,0);
+ it("maps radar provider to parent but retains unvalidated research state",()=>{const s=eventTrading.signals([{id:"i",provider:"AWS eu-west-1",layer:"region",startedAt:new Date(now-1000).toISOString()}],new Date(now).toISOString());expect(s[0].symbol).toBe("AMZN");expect(s[0].decision).toBe("RESEARCH");});
+ it("does not invent exposure for unknown providers",()=>expect(eventTrading.signals([{id:"i",provider:"Unknown",layer:"dns",startedAt:"2026-01-01"}],"2026-01-02")).toEqual([]));
+ it("integrates orderbook depth rather than top price",()=>expect(eventTrading.fill([[100,0.5],[102,0.5]],1,true)?.vwap).toBe(101));
+ it("rejects partial depth",()=>expect(eventTrading.fill([[100,0.1]],1,true)).toBeNull());
+ it("allows only a paper candidate when all constraints pass",()=>expect(route().decision).toBe("PAPER_CANDIDATE"));
+ it("blocks stale source data",()=>{const a=book("A",100);a.sourceAt=new Date(now-20000).toISOString();expect(route(a).decision).toBe("BLOCKED");});
+ it("blocks nonmatching quote currencies",()=>{const a=book("A",100);a.currency="USDT";expect(route(a).blockers).toContain("Asset and quote currency must match");});
+ it("blocks unverified fees even with a positive spread",()=>{const a=book("A",100);a.feeVerified=false;expect(route(a).decision).toBe("BLOCKED");});
+ it("blocks a profitable spread if transfers are disabled",()=>{const inventory={...balances,A:{...balances.A,withdrawals:"disabled" as const}};expect(eventTrading.arbitrage(book("A",100),book("B",110),1,now,inventory,0,0).decision).toBe("BLOCKED");});
+ it("blocks outages and auction books",()=>{const a=book("A",100);a.trading="restricted";expect(route(a).decision).toBe("BLOCKED");a.trading="online";a.bids=[[101,1]];expect(route(a).decision).toBe("BLOCKED");});
+ it("does not ignore fees and slippage that erase the spread",()=>expect(eventTrading.arbitrage(book("A",100),book("B",101.1),1,now,balances,50,2).decision).toBe("BLOCKED"));
+ it("rejects invalid quantities",()=>expect(eventTrading.arbitrage(book("A",100),book("B",110),NaN,now).decision).toBe("BLOCKED"));
+ const signal=(observedAt:number,id:string):EventSignal=>({signalId:id,incidentId:id,symbol:"NET",provider:"Cloudflare",direction:"SHORT",observedAt:new Date(observedAt).toISOString(),eventAt:new Date(observedAt-1).toISOString(),decision:"RESEARCH",ruleVersion:"outage-v1",reason:"test"});
+ const day=86400000;
+ it("never uses a pre-event entry bar",()=>{const out=eventTrading.backtest([signal(now,"s")],{NET:[{at:now-1000,open:200,close:100},{at:now+day,open:100,close:90}]},now+3*day,1);expect(out.trades[0].entryAt).toBe(now+day);expect(out.trades[0].grossPct).toBe(10);expect(out.trades[0].netPct).toBeLessThan(10);});
+ it("excludes incomplete daily bars",()=>{const out=eventTrading.backtest([signal(now,"s")],{NET:[{at:now+day,open:100,close:90}]},now+day+100,1);expect(out.test.trades).toBe(0);expect(out.status).toBe("insufficient_history");});
+ it("embargoes training trades crossing the test boundary",()=>{const es=[signal(now,"a"),signal(now+day,"b"),signal(now+2*day,"c")];const bars=Array.from({length:10},(_,i)=>({at:now+(i+1)*day,open:100,close:99}));expect(eventTrading.backtest(es,{NET:bars},now+20*day,5).embargoed).toBe(2);});
+ it("removes overlapping trades in the same instrument",()=>{const es=[signal(now,"a"),signal(now+day,"b"),signal(now+day+1,"c")];const bars=Array.from({length:10},(_,i)=>({at:now+(i+1)*day,open:100,close:99}));const r=eventTrading.backtest(es,{NET:bars},now+20*day,5);expect(r.test.trades).toBe(1);});
+});

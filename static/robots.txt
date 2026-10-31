@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /stats
+Disallow: /unsubscribe
+Disallow: /alerts/confirm
+Disallow: /_api/radar/global_run
+Disallow: /_api/radar/geo_refresh
+Disallow: /_api/agents/directory_refresh
+Disallow: /_api/agents/probe_run
+
+Sitemap: https://shadowalpha.online/sitemap.xml

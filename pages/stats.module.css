@@ -1,0 +1,45 @@
+.dayCountries { grid-column: 2 / -1; font-size: 0.8rem; color: var(--secondary-foreground); padding: 2px 0 6px; }
+.page { max-width: 1100px; margin: 0 auto; padding: var(--spacing-12) var(--spacing-6) var(--spacing-20); color: var(--foreground); font-family: var(--font-family-base); display: flex; flex-direction: column; gap: var(--spacing-6); }
+.eyebrow { font-family: var(--font-family-monospace); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-foreground); }
+.h1 { font-family: var(--font-family-display); font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.02; margin: 0; }
+.lead { color: var(--secondary-foreground); font-weight: 300; line-height: 1.6; margin: 0; max-width: 760px; }
+.warn { color: var(--warning); margin: 0; }
+.muted { color: var(--muted-foreground); font-size: 0.84rem; margin: 0; }
+.kpis { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--card); }
+.kpis div { display: flex; flex-direction: column; gap: 4px; padding: var(--spacing-4) 1.25rem; border-right: 1px solid var(--border); }
+.kpis div:last-child { border-right: 0; }
+.kpis b { font-family: var(--font-family-monospace); font-weight: 500; font-size: 1.7rem; font-variant-numeric: tabular-nums; }
+.kpis span { font-size: 0.76rem; color: var(--muted-foreground); }
+.card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); padding: 1.25rem; display: flex; flex-direction: column; gap: var(--spacing-3); min-width: 0; }
+.h2 { font-family: var(--font-family-monospace); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-foreground); font-weight: 500; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-4); }
+.days { display: flex; flex-direction: column; gap: 4px; }
+.dayRow { display: grid; grid-template-columns: 96px minmax(0, 1fr) 40px 150px; gap: 10px; align-items: center; font-size: 0.82rem; }
+.dayRow b, .list b { font-family: var(--font-family-monospace); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.dayLabel { color: var(--secondary-foreground); white-space: nowrap; }
+.dim { color: var(--muted-foreground); font-size: 0.74rem; white-space: nowrap; }
+.track { height: 8px; background: var(--muted); border-radius: 4px; overflow: hidden; }
+.track i { display: block; height: 100%; background: var(--primary); border-radius: 4px; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.list li { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 40px; gap: 10px; align-items: center; font-size: 0.84rem; }
+.lk { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.estimate { border-style: dashed; }
+.estimate b { color: var(--foreground); font-weight: 500; }
+.estTotals { display: flex; flex-wrap: wrap; gap: var(--spacing-8); padding: var(--spacing-2) 0; }
+.estTotals div { display: flex; flex-direction: column; gap: 2px; }
+.estTotals b { font-family: var(--font-family-monospace); font-size: 1.5rem; }
+.estTotals span { font-size: 0.74rem; color: var(--muted-foreground); }
+.estRow { display: grid; grid-template-columns: 96px 48px 170px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 0.82rem; padding: 4px 0; border-top: 1px solid var(--border); }
+.estRow b { font-family: var(--font-family-monospace); }
+.estTop { color: var(--muted-foreground); font-family: var(--font-family-monospace); font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn { align-self: flex-start; height: 40px; padding: 0 18px; border-radius: var(--radius-full); border: 1px solid var(--border-strong); background: transparent; color: var(--foreground); font: inherit; font-size: 0.86rem; cursor: pointer; }
+.btn:hover { border-color: var(--foreground); }
+@media (max-width: 760px) {
+  .page { padding: var(--spacing-8) var(--spacing-4) var(--spacing-16); }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .kpis div { border-bottom: 1px solid var(--border); }
+  .grid { grid-template-columns: 1fr; }
+  .dayRow { grid-template-columns: 82px minmax(0, 1fr) 32px; }
+  .dim { display: none; }
+  .estRow { grid-template-columns: 82px 44px minmax(0, 1fr); }
+}

@@ -1,0 +1,21 @@
+.bar { position: sticky; top: 61px; z-index: 40; background: color-mix(in srgb, var(--background) 92%, transparent); backdrop-filter: saturate(140%) blur(14px); border-bottom: 1px solid var(--border); }
+.inner { max-width: 1280px; margin: 0 auto; padding: 0 var(--spacing-6); height: 46px; display: flex; align-items: center; gap: var(--spacing-8); }
+.title { flex: none; height: 46px; line-height: 46px; font-family: var(--font-family-monospace); font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--foreground); white-space: nowrap; padding-right: var(--spacing-6); border-right: 1px solid var(--border); text-decoration: none; }
+.n { color: var(--primary); margin-right: 10px; letter-spacing: 0.04em; }
+.next { flex: none; height: 46px; line-height: 46px; padding-left: var(--spacing-6); border-left: 1px solid var(--border); white-space: nowrap; text-decoration: none; color: var(--muted-foreground); font-size: 0.76rem; }
+.next b { color: var(--foreground); font-weight: 400; margin-left: 6px; }
+.next:hover b { color: var(--primary); }
+.items { flex: 1; min-width: 0; height: 46px; display: flex; align-items: flex-start; gap: var(--spacing-6); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.items::-webkit-scrollbar { display: none; }
+.items a { position: relative; flex: none; display: block; height: 46px; line-height: 46px; margin: 0; padding: 0; white-space: nowrap; color: var(--muted-foreground); text-decoration: none; font-size: 0.84rem; transition: color var(--animation-duration-fast); }
+.items a:hover { color: var(--foreground); }
+.items a.active { color: var(--foreground); }
+.items a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--primary); border-radius: 2px 2px 0 0; }
+.items a:focus-visible { outline: none; color: var(--foreground); text-decoration: underline; text-underline-offset: 4px; }
+.items::after { content: ""; flex: none; width: 8px; }
+@media (max-width: 760px) {
+  .inner { padding: 0 var(--spacing-4); gap: var(--spacing-4); }
+  .title { padding-right: var(--spacing-4); }
+  .items { gap: 1.25rem; }
+  .next { display: none; }
+}

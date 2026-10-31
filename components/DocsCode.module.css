@@ -1,0 +1,20 @@
+.code { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--sidebar, #080b0f); overflow: hidden; min-width: 0; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 8px 0 12px; border-bottom: 1px solid var(--border); background: var(--surface); font-family: var(--font-family-monospace); font-size: 0.72rem; color: var(--muted-foreground); }
+.title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.actions { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.code pre { margin: 0; padding: 14px 16px; overflow: auto; max-height: 460px; font-family: var(--font-family-monospace); font-size: 0.76rem; line-height: 1.6; color: var(--secondary-foreground); tab-size: 2; scrollbar-width: thin; }
+.code pre code { background: none !important; border: 0 !important; padding: 0 !important; font-size: inherit !important; white-space: pre; word-break: normal !important; color: inherit !important; font-family: inherit !important; }
+.note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 0.76rem; color: var(--muted-foreground); line-height: 1.5; }
+.note code { font-family: var(--font-family-monospace); font-size: 0.72rem; color: var(--foreground); background: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+.copy { height: 26px; padding: 0 10px; border-radius: var(--radius-full); border: 1px solid var(--border-strong); background: transparent; color: var(--secondary-foreground); font-family: var(--font-family-monospace); font-size: 0.66rem; cursor: pointer; transition: border-color var(--animation-duration-fast), color var(--animation-duration-fast); }
+.copy:hover { border-color: var(--foreground); color: var(--foreground); }
+.tKey { color: var(--info); }
+.tStr { color: var(--accent-foreground); }
+.tNum { color: var(--warning); }
+.tLit { color: var(--error); }
+.tCom { color: var(--muted-foreground); font-style: italic; }
+.tabs { display: inline-flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab, .tabOn { flex: none; height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--muted-foreground); font-family: var(--font-family-monospace); font-size: 0.7rem; cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--foreground); }
+.tabOn { background: var(--muted); color: var(--foreground); }

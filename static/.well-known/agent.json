@@ -1,0 +1,26 @@
+{
+  "name": "ShadowGraph Market Intelligence",
+  "description": "Global evidence-ranked relationship, validated price-lag, market-signal and procurement-opportunity intelligence for autonomous agents.",
+  "url": "https://shadowalpha.online/_api/a2a",
+  "version": "2.3.3",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json", "text/plain"],
+  "skills": [
+    {
+      "id": "global-snapshot",
+      "name": "Global hidden-relationship snapshot",
+      "description": "Global hidden relationships with pay-per-call MPP settlement.",
+      "tags": ["global", "markets", "MPP"]
+    },
+    {
+      "id": "deep-research",
+      "name": "Deep research pack",
+      "description": "Expanded evidence-ranked research pack with $5 pay-per-call MPP settlement.",
+      "tags": ["global", "research", "MPP"]
+    }
+  ]
+}

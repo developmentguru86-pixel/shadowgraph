@@ -1,0 +1,32 @@
+.page { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-6) var(--spacing-20); color: var(--foreground); font-family: var(--font-family-base); overflow-x: clip; }
+.hero { padding: var(--spacing-16) 0 var(--spacing-8); max-width: 760px; }
+.other { display: inline-block; font-size: 0.82rem; color: var(--muted-foreground); text-decoration: none; border-bottom: 1px solid var(--border-strong); margin-bottom: var(--spacing-4); }
+.other:hover { color: var(--foreground); }
+.h1 { font-family: var(--font-family-display); font-weight: 400; font-size: clamp(2.3rem, 5.4vw, 4.4rem); line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 var(--spacing-4); max-width: 18ch; }
+.lead { margin: 0; color: var(--secondary-foreground); font-size: 1.05rem; line-height: 1.6; font-weight: 300; max-width: 62ch; }
+.cta { margin: var(--spacing-12) 0; display: grid; grid-template-columns: 1fr auto; gap: var(--spacing-6); align-items: center; padding: var(--spacing-8); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); }
+.cta h2 { font-family: var(--font-family-display); font-weight: 400; font-size: 1.7rem; line-height: 1.15; margin: 0 0 8px; }
+.cta p { margin: 0; color: var(--secondary-foreground); line-height: 1.6; max-width: 68ch; font-size: 0.94rem; }
+.btn { display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: var(--radius-full); background: var(--foreground); color: var(--background); font-weight: 500; text-decoration: none; white-space: nowrap; }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-12); }
+.text { min-width: 0; }
+.text h2 { font-family: var(--font-family-display); font-weight: 400; font-size: 1.6rem; margin: var(--spacing-8) 0 var(--spacing-3); }
+.text h2:first-child { margin-top: 0; }
+.text p { color: var(--secondary-foreground); line-height: 1.7; font-size: 0.95rem; max-width: 68ch; margin: 0 0 var(--spacing-3); }
+.dls { margin: 0 0 var(--spacing-4); border-top: 1px solid var(--border); }
+.dls div { display: grid; grid-template-columns: 11rem 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.dls dt { font-weight: 500; font-size: 0.92rem; }
+.dls dd { margin: 0; color: var(--secondary-foreground); font-size: 0.9rem; line-height: 1.6; }
+.faq { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.faq summary { cursor: pointer; font-weight: 500; font-size: 0.95rem; line-height: 1.45; }
+.faq p { margin: 8px 0 0; }
+.sources { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; }
+.sources a { color: var(--primary); }
+@media (max-width: 860px) {
+  .page { padding: 0 var(--spacing-4) var(--spacing-12); }
+  .hero { padding-top: 2.5rem; }
+  .cta, .cols { grid-template-columns: 1fr; }
+  .cta { padding: 1.25rem; }
+  .dls div { grid-template-columns: 1fr; gap: 4px; }
+}

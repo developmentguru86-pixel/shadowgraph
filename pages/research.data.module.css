@@ -1,0 +1,17 @@
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-4); }
+.card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--spacing-6); display: flex; flex-direction: column; gap: var(--spacing-4); }
+.card header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--spacing-4); }
+.card h2 { margin: 0; font-family: var(--font-family-display); font-weight: 400; font-size: 1.6rem; line-height: 1.1; }
+.card header span { display: block; margin-top: 6px; font-size: 0.84rem; color: var(--muted-foreground); }
+.dl { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-full); color: var(--foreground); text-decoration: none; font-family: var(--font-family-monospace); font-size: 0.72rem; transition: border-color var(--animation-duration-fast), color var(--animation-duration-fast); }
+.dl:hover { border-color: var(--primary); color: var(--primary); }
+.card dl { margin: 0; border-top: 1px solid var(--border); }
+.card dl div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--spacing-4); padding: 9px 0; border-bottom: 1px solid var(--border); }
+.card dt { font-family: var(--font-family-monospace); font-size: 0.74rem; color: var(--foreground); word-break: break-word; }
+.card dd { margin: 0; font-size: 0.84rem; color: var(--secondary-foreground); font-weight: 300; line-height: 1.5; }
+.code { font-family: var(--font-family-monospace); font-size: 0.8rem; color: var(--accent-foreground); word-break: break-all; }
+.cite { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: var(--spacing-6); display: flex; flex-direction: column; gap: var(--spacing-4); }
+.cite p { margin: 0; color: var(--secondary-foreground); line-height: 1.6; font-size: 0.94rem; }
+.cite pre { margin: 0; font-family: var(--font-family-monospace); font-size: 0.74rem; line-height: 1.6; color: var(--secondary-foreground); background: var(--background); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--spacing-4); white-space: pre-wrap; word-break: break-word; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .card dl div { grid-template-columns: 1fr; gap: 2px; } .card header { flex-direction: column; } }

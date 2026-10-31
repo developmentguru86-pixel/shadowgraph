@@ -1,0 +1,2 @@
+import {eventExecution} from "../helpers/eventExecution";
+export async function handle(){try{return Response.json(await eventExecution.summary(),{headers:{"Cache-Control":"no-store"}});}catch{ return Response.json({error:"Event research temporarily unavailable"},{status:503});}}

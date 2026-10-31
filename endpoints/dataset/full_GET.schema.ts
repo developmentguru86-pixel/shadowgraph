@@ -1,0 +1,1 @@
+export type OutputType = { stats: Record<string, unknown>; rows: Array<Record<string, unknown>> };

@@ -1,0 +1,88 @@
+{
+  "name": "ShadowGraph Market Intelligence",
+  "description": "Global evidence-ranked relationship, validated price-lag, market-signal and procurement-opportunity intelligence for autonomous agents. Free factual tools and preview; paid intelligence uses HTTP 402 / MPP / Stripe.",
+  "version": "2.3.3",
+  "provider": {
+    "organization": "ShadowGraph",
+    "url": "https://shadowalpha.online"
+  },
+  "supportedInterfaces": [
+    {
+      "url": "https://shadowalpha.online/_api/a2a",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "extendedAgentCard": false
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json", "text/plain"],
+  "skills": [
+    {
+      "id": "market-recap",
+      "name": "Global market recap",
+      "description": "Free compact answer to what moved in global markets today, with current movers and recent thematic news.",
+      "tags": ["free", "markets", "recap", "global"],
+      "examples": ["What moved in global markets today?"]
+    },
+    {
+      "id": "company-filings",
+      "name": "Latest official company filings",
+      "description": "Free recent SEC EDGAR filing lookup for supported ticker symbols.",
+      "tags": ["free", "SEC", "filings", "official"],
+      "examples": ["Show me the latest NVDA SEC filings."]
+    },
+    {
+      "id": "eu-tenders",
+      "name": "EU procurement search",
+      "description": "Free search over current EU TED procurement notices by keyword or buyer country.",
+      "tags": ["free", "TED", "procurement", "EU"],
+      "examples": ["Find open EU data-center tenders in Germany."]
+    },
+    {
+      "id": "free-preview",
+      "name": "Free global intelligence preview",
+      "description": "Inspect live global coverage, graph size and top measured price-lag relationship before purchasing.",
+      "tags": ["global", "markets", "relationship-intelligence", "free-preview", "agent-discovery"],
+      "examples": ["Show me a free preview of your current global intelligence coverage."]
+    },
+    {
+      "id": "global-snapshot",
+      "name": "Global hidden-relationship snapshot",
+      "description": "Paid $0.50 call for global hidden relationships across official filings, procurement, markets and infrastructure.",
+      "tags": ["markets", "SEC", "TED", "relationships", "MPP", "pay-per-call"],
+      "examples": ["Give me the current global hidden relationship snapshot."]
+    },
+    {
+      "id": "market-signal",
+      "name": "Global market signal",
+      "description": "Paid $0.75 call for directional market intelligence with measured lead-lag evidence and invalidation logic.",
+      "tags": ["alpha", "lead-lag", "markets", "risk", "MPP"],
+      "examples": ["What is the strongest global market signal right now?"]
+    },
+    {
+      "id": "procurement-opportunity",
+      "name": "Global procurement and commercial opportunity",
+      "description": "Paid $1.00 call for evidence-backed supplier, procurement and second-order commercial opportunities.",
+      "tags": ["procurement", "TED", "SEC", "suppliers", "commercial-intelligence", "MPP"],
+      "examples": ["Find the strongest global procurement or supplier opportunity."]
+    },
+    {
+      "id": "global-intelligence-brief",
+      "name": "Global intelligence brief",
+      "description": "Paid $2.50 call for a higher-density brief combining official filings, procurement, global news, relationship graph, measured lags and commercial opportunities.",
+      "tags": ["global", "brief", "SEC", "TED", "markets", "MPP"],
+      "examples": ["Give me the current global intelligence brief."]
+    },
+    {
+      "id": "deep-research",
+      "name": "Deep research pack",
+      "description": "Paid $5.00 call for an expanded machine-readable research pack with official evidence, graph relationships, price lags and commercial opportunity analysis.",
+      "tags": ["deep-research", "global", "markets", "procurement", "agent-research", "MPP"],
+      "examples": ["Run a deep research pack on the current global environment."]
+    }
+  ]
+}

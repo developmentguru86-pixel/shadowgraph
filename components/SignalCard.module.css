@@ -1,0 +1,27 @@
+.card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--background); padding: var(--spacing-6); display: flex; flex-direction: column; gap: 1.25rem; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-4); }
+.when { display: flex; flex-direction: column; gap: 4px; }
+.when b { font-weight: 500; font-size: 0.95rem; }
+.when span { font-family: var(--font-family-monospace); font-size: 0.7rem; color: var(--muted-foreground); letter-spacing: 0.04em; }
+.provider { display: flex; flex-direction: column; gap: 4px; }
+.k { font-family: var(--font-family-monospace); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-foreground); }
+.provider strong { font-family: var(--font-family-display); font-weight: 400; font-size: 1.9rem; line-height: 1.1; letter-spacing: -0.01em; }
+.sub { font-size: 0.84rem; color: var(--secondary-foreground); font-weight: 300; }
+.companies { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.companies li { display: grid; grid-template-columns: minmax(0, 180px) 1fr; gap: var(--spacing-4); padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; line-height: 1.5; }
+.company { font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
+.company small { font-family: var(--font-family-monospace); font-weight: 400; font-size: 0.68rem; color: var(--muted-foreground); }
+.companies a, .companies li > span:last-child { color: var(--secondary-foreground); font-weight: 300; text-decoration: none; }
+.companies a:hover { color: var(--foreground); }
+.companies a svg { vertical-align: -1px; color: var(--muted-foreground); }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--spacing-3) var(--spacing-6); font-size: 0.82rem; color: var(--secondary-foreground); }
+.foot b { font-family: var(--font-family-monospace); font-weight: 500; color: var(--foreground); }
+.foot a { color: var(--secondary-foreground); text-decoration: none; border-bottom: 1px solid var(--border-strong); }
+.foot a:hover { color: var(--foreground); }
+.ahead { color: var(--primary) !important; }
+.muted { color: var(--muted-foreground); font-weight: 300; }
+@media (max-width: 600px) {
+  .card { padding: 1.25rem; }
+  .companies li { grid-template-columns: 1fr; gap: 4px; }
+  .head { flex-direction: column; }
+}

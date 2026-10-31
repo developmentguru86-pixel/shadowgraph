@@ -1,0 +1,2 @@
+.main { max-width: 1120px; margin: 0 auto; padding: 0 var(--spacing-6) var(--spacing-20); color: var(--foreground); font-family: var(--font-family-base); font-synthesis-weight: none; }
+@media (max-width: 520px) { .main { padding: 0 var(--spacing-4) var(--spacing-16); } }

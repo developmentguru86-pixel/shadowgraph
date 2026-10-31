@@ -1,0 +1,44 @@
+.wrap { position: relative; background: radial-gradient(ellipse at 52% 35%, color-mix(in srgb, var(--primary) 8%, var(--card)), var(--background) 75%); overflow: hidden; touch-action: none; }
+.svg { display: block; width: 100%; height: auto; aspect-ratio: 1080 / 396; min-height: 340px; cursor: grab; user-select: none; }
+.svg:active { cursor: grabbing; }
+.full { position: fixed; inset: 0; z-index: var(--z-overlay); background: var(--background); }
+.full .svg { height: 100%; aspect-ratio: auto; min-height: 0; }
+.land { fill: color-mix(in srgb, var(--foreground) 22%, transparent); opacity: 0.45; }
+.grid { stroke: var(--border); opacity: 0.6; }
+.node { stroke: var(--background); transition: r 0.2s; }
+.up .node { fill: var(--primary); }
+.country .node { fill: color-mix(in srgb, var(--accent-foreground) 70%, var(--muted-foreground)); }
+.warn .node { fill: var(--warning); }
+.down .node { fill: var(--error); }
+.sel .node { stroke: var(--foreground); }
+.ring { fill: none; stroke: var(--error); animation: ping 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ping { from { transform: scale(1); opacity: 0.9; } to { transform: scale(4); opacity: 0; } }
+.label { fill: var(--secondary-foreground); font-family: var(--font-family-monospace); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--background); }
+.controls { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 6px; }
+.controls button { width: 36px; height: 36px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: color-mix(in srgb, var(--background) 80%, transparent); color: var(--foreground); font-size: 1.05rem; cursor: pointer; backdrop-filter: blur(6px); }
+.controls button:hover { border-color: var(--foreground); }
+.zoomLevel { position: absolute; left: 12px; bottom: 10px; font-family: var(--font-family-monospace); font-size: 0.68rem; color: var(--muted-foreground); pointer-events: none; }
+.panel { position: absolute; top: 12px; right: 12px; bottom: 12px; width: 320px; overflow: auto; background: color-mix(in srgb, var(--card) 95%, transparent); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--spacing-4); backdrop-filter: blur(8px); display: flex; flex-direction: column; gap: var(--spacing-3); }
+.pHead { display: flex; align-items: baseline; gap: 8px; }
+.pHead b { font-weight: 600; font-size: 1rem; }
+.close { margin-left: auto; background: none; border: 0; color: var(--muted-foreground); font-size: 1.3rem; cursor: pointer; line-height: 1; }
+.mono { font-family: var(--font-family-monospace); font-size: 0.72rem; color: var(--muted-foreground); }
+.pStats { display: flex; gap: var(--spacing-4); font-size: 0.8rem; color: var(--muted-foreground); }
+.pStats b { color: var(--foreground); font-family: var(--font-family-monospace); font-weight: 500; }
+.warnText b { color: var(--warning); }
+.pBreak { display: flex; flex-wrap: wrap; gap: 6px; }
+.pBreak span { font-size: 0.72rem; border: 1px solid var(--border); border-radius: var(--radius-full); padding: 2px 8px; color: var(--secondary-foreground); }
+.pBreak b { font-family: var(--font-family-monospace); font-weight: 500; margin-left: 4px; }
+.pList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+.pList li { display: grid; grid-template-columns: 8px 1fr auto; gap: 8px; align-items: center; }
+.pList li span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sUp, .sDown, .sWarn { width: 7px; height: 7px; border-radius: 50%; }
+.sUp { background: var(--primary); } .sDown { background: var(--error); } .sWarn { background: var(--warning); }
+.more { font-size: 0.74rem; color: var(--muted-foreground); margin: 0; }
+.zoomTo { margin-top: auto; height: 34px; border-radius: var(--radius-full); border: 1px solid var(--border-strong); background: transparent; color: var(--foreground); font: inherit; font-size: 0.82rem; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; } }
+@media (max-width: 760px) {
+  .svg { min-height: 260px; }
+  .panel { position: static; width: auto; margin: 0 var(--spacing-3) var(--spacing-3); max-height: 60vh; }
+  .full .panel { position: absolute; left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 45vh; margin: 0; }
+}

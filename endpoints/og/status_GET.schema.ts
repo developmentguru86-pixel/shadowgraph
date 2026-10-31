@@ -1,0 +1,2 @@
+// Image endpoint: GET /_api/og/status?slug=<status slug>&lang=en|de returns image/png (referenced from og:image, not called from code).
+export const ogStatusImageUrl = (slug: string, lang: "en" | "de") => `/_api/og/status?slug=${encodeURIComponent(slug)}&lang=${lang}&v=1`;

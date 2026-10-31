@@ -1,0 +1,1 @@
+export type OutputType={provider?:string;mode?:string;connected?:boolean;killed?:boolean;liveEnabled?:boolean;error?:string;state?:string;clientOrderId?:string};
