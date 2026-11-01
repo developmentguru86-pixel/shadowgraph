@@ -34,7 +34,7 @@ export default function MethodsPage() {
           <div><b>Controls must pass</b><p>Statistical tests include a negative control that must show nothing and a planted positive control that must be found. If either fails, the result is not interpreted.</p></div>
           <div><b>Honest denominators</b><p>Rates come with their counts and 95% intervals. Missing values show as a dash, never as zero. Too-small samples get no verdict.</p></div>
           <div><b>Negative results stay public</b><p>Retired rules, failed ideas and misses are listed with the same prominence as successes.</p></div>
-          <div><b>Reproducible</b><p>Fixed random seeds, open CSV tables under CC BY 4.0, and a JSON copy of every number shown.</p></div>
+          <div><b>Reproducible</b><p>Fixed random seeds, versioned rules, the CSV tables behind every result (with a data key) and a JSON copy of every number shown.</p></div>
           <div><b>Sources you can check</b><p>Every official incident links to the company's or provider's own page.</p></div>
         </div>
       </Block>
@@ -78,7 +78,7 @@ export default function MethodsPage() {
       </Block>
 
       <NextLinks links={[
-        { href: "/research/data", label: "Open data", desc: "Download every table" },
+        { href: "/research/data", label: "Data access", desc: "Every table, with a data key" },
         { href: "/research/shared-fate", label: "Shared fate", desc: "The main study" },
         { href: "/research", label: "Research overview", desc: "Findings at a glance" },
       ]} />

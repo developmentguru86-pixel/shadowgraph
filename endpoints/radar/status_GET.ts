@@ -3,6 +3,8 @@ import { db } from "../../helpers/db";
 import { mppStore } from "../../helpers/mppStore";
 import { jsonResponse } from "../../helpers/jsonResponse";
 import { GEO_ATTRIBUTION } from "../../helpers/licensing";
+import { isOwnSiteRequest, bulkAccessDenied } from "../../helpers/siteAccess";
+import { dependencyDataset } from "../../helpers/dependencyDataset";
 
 type Run = { runId: string; at: string; total: number; up: number; degraded: number; down: number; vantageSuspect: boolean; medianLatencyMs: number | null };
 
@@ -14,6 +16,10 @@ type SweepAggregates = {
 };
 const AGG_KEY = "radar:statusAggregates";
 let memo: SweepAggregates | null = null;
+// whole response per sweep on a warm instance: the endpoint is no longer edge-cached (access check), so repeated
+// page loads within a minute reuse the last result instead of reading the database again
+let payloadMemo: { runId: string; at: number; data: unknown } | null = null;
+const HEADERS = { "Cache-Control": "private, max-age=30", Vary: "Accept-Encoding, Sec-Fetch-Site, Referer", "Access-Control-Allow-Origin": "https://shadowalpha.online" };
 
 async function sweepAggregates(runId: string): Promise<SweepAggregates> {
   if (memo?.runId === runId) return memo;
@@ -42,10 +48,18 @@ async function sweepAggregates(runId: string): Promise<SweepAggregates> {
   return fresh;
 }
 
-// Public live state of the Internet Outage Radar.
+// Live state of the Internet Outage Radar: complete service list with infrastructure. Loaded by the site's own pages;
+// direct machine access needs a data key (see helpers/siteAccess). Not cached at the edge, so the check always runs.
 export async function handle(request: Request) {
+  if (!isOwnSiteRequest(request)) {
+    const auth = request.headers.get("authorization");
+    const key = (auth?.startsWith("Bearer ") ? auth.slice(7) : null) ?? request.headers.get("x-api-key");
+    const check = key ? await dependencyDataset.authorize(key.trim()) : { ok: false };
+    if (!check.ok) return bulkAccessDenied();
+  }
   const run = (await mppStore.get("radar:lastRun")) as Run | null;
   if (!run) return Response.json({ status: "warming_up" }, { headers: { "Cache-Control": "no-store" } });
+  if (payloadMemo && payloadMemo.runId === run.runId && Date.now() - payloadMemo.at < 60_000) return jsonResponse(request, payloadMemo.data, { headers: HEADERS });
 
   const services = await db.selectFrom("radarServices")
     .leftJoin("serviceGeo", "serviceGeo.serviceId", "radarServices.id")
@@ -117,7 +131,7 @@ export async function handle(request: Request) {
       errors: list.filter((r) => r.state === "down" || r.state === "degraded").length, medianLatencyMs: latencyOf(list) };
   }).sort((a, b) => b.services - a.services).slice(0, 12);
 
-  return jsonResponse(request, {
+  const data = {
     status: "live", run, services: rows,
     attribution: { geolocation: GEO_ATTRIBUTION },
     infrastructure: [...infra.values()].sort((a, b) => b.services - a.services),
@@ -130,5 +144,7 @@ export async function handle(request: Request) {
       const list = rows.filter((r) => r.category === c);
       return { category: c, services: list.length, errors: list.filter((r) => r.state === "down" || r.state === "degraded").length, medianLatencyMs: latencyOf(list) };
     }),
-  }, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } });
+  };
+  payloadMemo = { runId: run.runId, at: Date.now(), data };
+  return jsonResponse(request, data, { headers: HEADERS });
 }

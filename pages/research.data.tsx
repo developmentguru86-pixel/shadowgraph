@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
-import { Download } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { PageIntro, Block, Table, Note, NextLinks } from "../components/StudyKit";
-import { datasetUrl, type DatasetTable } from "../endpoints/research/dataset_GET.schema";
+import { type DatasetTable } from "../endpoints/research/dataset_GET.schema";
 import { useResearchOverview } from "../helpers/useResearchData";
 import { SITE_URL } from "../helpers/site";
 import styles from "./research.data.module.css";
@@ -16,21 +16,19 @@ const TABLES: Array<{ id: DatasetTable; title: string; row: string; days?: numbe
   { id: "hourly", title: "Hourly reachability", row: "one service-hour", days: 7, columns: [["service_id, hour", "Service and UTC hour"], ["probes, reachable", "Counts"], ["p50_ms, p95_ms", "Latency of successful probes"]] },
 ];
 
-// schema.org Dataset markup so the tables can appear in Google Dataset Search.
-const abs = (u: string) => (u.startsWith("http") ? u : `${SITE_URL}${u}`);
+// schema.org Dataset markup so the tables can appear in Google Dataset Search (licensed access, not free).
 const DATASET_LD = {
   "@context": "https://schema.org",
   "@type": "Dataset",
-  name: "ShadowGraph Open Measurement Dataset",
+  name: "ShadowGraph Measurement Dataset",
   description: "Rolling measurements of about 3,200 internet services (APIs, SaaS, banks, top websites, cloud region canaries) probed every five minutes: the infrastructure each service runs on (hosting provider, cloud region, CDN, DNS and email provider), five-minute reachability sweeps, outage episodes, hourly reachability and latency, official incidents from company and infrastructure provider status pages, and statistically flagged shared-provider signals. Every row carries UTC timestamps.",
   url: `${SITE_URL}/research/data`,
-  license: "https://creativecommons.org/licenses/by/4.0/",
-  isAccessibleForFree: true,
+  isAccessibleForFree: false,
+  conditionsOfAccess: "Data key required; internal use by the key holder, no redistribution or resale.",
   creator: { "@type": "Organization", name: "ShadowGraph", url: SITE_URL },
   keywords: ["internet outages", "cloud outages", "service availability", "infrastructure dependencies", "CDN", "DNS", "cloud regions", "status pages", "concentration risk"],
   spatialCoverage: "Worldwide",
   measurementTechnique: "HTTPS probes every 5 minutes from AWS us-east-1; DNS, IP ownership and published cloud IP ranges for infrastructure mapping",
-  distribution: TABLES.map((t) => ({ "@type": "DataDownload", name: t.title, encodingFormat: "text/csv", contentUrl: abs(datasetUrl(t.id, t.days)) })),
 };
 
 export default function OpenDataPage() {
@@ -39,17 +37,17 @@ export default function OpenDataPage() {
   return (
     <>
       <Helmet>
-        <title>Open data: ShadowGraph measurement dataset (CC BY 4.0) · ShadowGraph Research</title>
-        <meta name="description" content="Download ShadowGraph's open measurement dataset: monitored services and their infrastructure, official company and provider incidents, upstream signals, radar sweeps and outage episodes. CSV, CC BY 4.0." />
-        <meta property="og:title" content="Open data: ShadowGraph measurement dataset (CC BY 4.0)" />
-        <meta property="og:description" content="Download ShadowGraph's open measurement dataset: monitored services and their infrastructure, official company and provider incidents, upstream signals, radar sweeps and outage episodes. CSV, CC BY 4.0." />
+        <title>Data access: ShadowGraph measurement dataset · ShadowGraph Research</title>
+        <meta name="description" content="ShadowGraph's measurement dataset: monitored services and their infrastructure, official company and provider incidents, upstream signals, radar sweeps and outage episodes. CSV via API with a data key." />
+        <meta property="og:title" content="Data access: ShadowGraph measurement dataset" />
+        <meta property="og:description" content="ShadowGraph's measurement dataset: monitored services and their infrastructure, official company and provider incidents, upstream signals, radar sweeps and outage episodes. CSV via API with a data key." />
         <script type="application/ld+json">{JSON.stringify(DATASET_LD)}</script>
       </Helmet>
       <PageIntro
-        eyebrow="Research · Open data"
-        title={<>Everything behind the numbers, <em>free to download.</em></>}
-        lede="Seven rolling tables as CSV under Creative Commons Attribution 4.0. Every row carries its own timestamps, so a download is a citable snapshot. Use them, check our work, publish your own analysis."
-        meta={[["Format", "CSV, UTF-8"], ["Licence", "CC BY 4.0"], ["Refresh", "10 min to hourly"]]}
+        eyebrow="Research · Data access"
+        title={<>Everything behind the numbers, <em>with a data key.</em></>}
+        lede="Seven rolling tables as CSV. Every row carries its own timestamps. The tables are included in the ShadowGraph data subscription; the key from the subscription works for every table."
+        meta={[["Format", "CSV, UTF-8"], ["Access", "Data key"], ["Refresh", "10 min to hourly"]]}
       />
 
       <div className={styles.grid}>
@@ -57,20 +55,21 @@ export default function OpenDataPage() {
           <article key={t.id} className={styles.card}>
             <header>
               <div><h2>{t.title}</h2><span>One row per {t.row}</span></div>
-              <a href={datasetUrl(t.id, t.days)} className={styles.dl} download><Download size={14} /> CSV{t.days ? ` · ${t.days} days` : ""}</a>
+              <a href="/data" className={styles.dl}><KeyRound size={14} /> CSV{t.days ? ` · ${t.days} days` : ""}</a>
             </header>
             <dl>{t.columns.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           </article>
         ))}
       </div>
 
-      <Block num="01" title="Machine access" intro="No key needed. Please cache responses; tables change at most every ten minutes.">
+      <Block num="01" title="Machine access" intro="Send the key as Authorization: Bearer sgd_… (or x-api-key). Licence: internal use by the key holder; no redistribution or resale. Tables change at most every ten minutes.">
         <Table head={["What", "Request"]} rows={[
-          ["Any table as CSV", <code className={styles.code}>GET /_api/research/dataset?table=&lt;name&gt;[&amp;days=1..31]</code>],
+          ["Any table as CSV (key)", <code className={styles.code}>GET /_api/research/dataset?table=&lt;name&gt;[&amp;days=1..31]</code>],
+          ["Live radar with full infrastructure (key)", <code className={styles.code}>GET /_api/radar/status</code>],
           ["Every research number (JSON)", <code className={styles.code}>GET /_api/research/overview</code>],
           ["Upstream signals and track record (JSON)", <code className={styles.code}>GET /_api/upstream/signals</code>],
-          ["Live radar status (JSON)", <code className={styles.code}>GET /_api/radar/status</code>],
         ]} />
+        <Note>Tables downloaded before 1 November 2026 were published under CC BY 4.0 and keep that licence. Data published since then is not open data.</Note>
       </Block>
 
       <Block num="02" title="Cite this work">
@@ -80,7 +79,7 @@ export default function OpenDataPage() {
   title  = {Do companies on the same infrastructure fail together?},
   author = {{ShadowGraph}},
   year   = {${year}},
-  note   = {Rules sf-v1, cs-v1, val-v1, conc-v1; data CC BY 4.0},
+  note   = {Rules sf-v1, cs-v1, val-v1, conc-v1},
   url    = {https://shadowalpha.online/research}
 }`}</pre>
         </div>

@@ -57,9 +57,9 @@ export default function ResearchHub() {
     <>
       <Helmet>
         <title>ShadowGraph Research: our claims about the internet, tested in public</title>
-        <meta name="description" content="Pre-specified, reproducible studies of internet dependencies: shared fate in official incident records, upstream signal track record, radar accuracy and provider concentration. Open data under CC BY 4.0." />
+        <meta name="description" content="Pre-specified, reproducible studies of internet dependencies: shared fate in official incident records, upstream signal track record, radar accuracy and provider concentration. Rules, methods and every published number in public." />
         <meta property="og:title" content="ShadowGraph Research: our claims about the internet, tested in public" />
-        <meta property="og:description" content="Pre-specified, reproducible studies of internet dependencies: shared fate in official incident records, upstream signal track record, radar accuracy and provider concentration. Open data under CC BY 4.0." />
+        <meta property="og:description" content="Pre-specified, reproducible studies of internet dependencies: shared fate in official incident records, upstream signal track record, radar accuracy and provider concentration. Rules, methods and every published number in public." />
       </Helmet>
       <PageIntro
         eyebrow="ShadowGraph Research"
@@ -121,7 +121,7 @@ export default function ResearchHub() {
         </ul>
         <div className={styles.links}>
           <a href="/research/methods">Methods, limitations and changelog <ArrowRight size={14} /></a>
-          <a href="/research/data">Open data and citation <ArrowRight size={14} /></a>
+          <a href="/research/data">Data access and citation <ArrowRight size={14} /></a>
         </div>
       </Block>
     </>

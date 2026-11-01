@@ -249,8 +249,8 @@ export default function Home() {
             <a href="/docs">API docs</a><a href="/openapi.json">OpenAPI</a><a href="/server.json">MCP manifest</a><a href="/.well-known/agent-card.json">A2A card</a>
           </div>
         </div>
-        <pre className={styles.code}><code>{`# live state of ${live ? fmt(live.run.total) : "3,000+"} services
-curl https://shadowalpha.online/_api/radar/status
+        <pre className={styles.code}><code>{`# is it down? live state of one service or provider
+curl "https://shadowalpha.online/_api/status/page?slug=aws"
 
 # MCP endpoint for agents
 https://shadowalpha.online/_api/mcp

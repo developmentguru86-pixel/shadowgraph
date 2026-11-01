@@ -1,9 +1,12 @@
 import { db } from "../../helpers/db";
 import { registrableDomain } from "../../helpers/vendorScan";
 import { DATASET_TABLES, type DatasetTable } from "./dataset_GET.schema";
+import { dependencyDataset } from "../../helpers/dependencyDataset";
 
 /**
- * ShadowGraph Open Measurement Dataset (CC BY 4.0). Versionless rolling tables; every row carries its own timestamps.
+ * ShadowGraph Measurement Dataset. Licensed access since 2026-11-01: every table needs a data key
+ * ("Authorization: Bearer sgd_..." or "x-api-key"). Copies downloaded before that date were published under CC BY 4.0.
+ * Versionless rolling tables; every row carries its own timestamps.
  * GET /_api/research/dataset?table=services|sweeps|episodes|hourly|status_incidents|provider_incidents|upstream_signals[&days=1..31 for hourly/sweeps]
  */
 const csvCell = (v: unknown) => {
@@ -67,6 +70,15 @@ async function load(table: DatasetTable, days: number): Promise<{ cols: string[]
 
 export async function handle(request: Request) {
   const url = new URL(request.url);
+  const auth = request.headers.get("authorization");
+  const key = (auth?.startsWith("Bearer ") ? auth.slice(7) : null) ?? request.headers.get("x-api-key");
+  const check = await dependencyDataset.authorize(key?.trim() ?? null);
+  if (!check.ok) {
+    return Response.json(
+      { error: "The measurement tables require a data key.", reason: check.reason, access: "https://shadowalpha.online/research/data" },
+      { status: check.reason === "subscription_inactive" ? 402 : 401, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   const table = url.searchParams.get("table") as DatasetTable | null;
   if (!table || !DATASET_TABLES.includes(table)) {
     return Response.json({ error: `table must be one of: ${DATASET_TABLES.join(", ")}` }, { status: 400 });
@@ -78,9 +90,8 @@ export async function handle(request: Request) {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="shadowgraph-${table}-${new Date().toISOString().slice(0, 10)}.csv"`,
-        "Cache-Control": "public, s-maxage=1800",
-        "X-License": "CC-BY-4.0",
-        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
+        "X-License": "ShadowGraph data licence: internal use by the key holder; no redistribution or resale",
       },
     });
   } catch (e) {

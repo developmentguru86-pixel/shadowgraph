@@ -141,6 +141,7 @@ export default function DataPage() {
               <li>Point-in-time: fiscal period and filing date on every row</li>
               <li>Official vs inferred attribution, with the filing evidence</li>
               <li>CSV download and JSON API with your own key</li>
+              <li>The same key opens the measurement tables: about 3,200 services with hosting, region, CDN, DNS and email provider, outage episodes and hourly reachability (<a href="/research/data">list</a>)</li>
               <li>Cancel anytime in Stripe</li>
             </ul>
             <Button size="lg" onClick={subscribe} disabled={checkingOut}>{checkingOut ? "Opening Stripe…" : "Subscribe"}</Button>

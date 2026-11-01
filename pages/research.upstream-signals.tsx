@@ -89,7 +89,7 @@ export default function SignalTrackRecord() {
       <NextLinks links={[
         { href: "/signals", label: "Live Upstream Signals", desc: "What is happening right now" },
         { href: "/research/shared-fate", label: "Shared fate", desc: "The statistical basis for signals" },
-        { href: "/research/data", label: "Open data", desc: "Download incidents and services" },
+        { href: "/research/data", label: "Data access", desc: "Incidents and services as CSV" },
       ]} />
     </>
   );

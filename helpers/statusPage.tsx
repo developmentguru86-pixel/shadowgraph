@@ -222,7 +222,8 @@ export async function getStatusPageData(rawSlug: string, opts: { full?: boolean 
       const [strength, l] = pick;
       sharedTotals[strength]++;
       all3.push({ slug: slugify(s.name), name: s.name, strength, sameCat: categories.has(s.category),
-        via: `${label[l.layer]} · ${l.name.replace(/^Other \((.+)\)$/, "$1")}${strength === "region" && s.hostingRegion ? ` ${s.hostingRegion}` : ""}` });
+        // DNS operators are not named on public pages (owner decision 2026-11-01): only that the DNS provider is shared
+        via: l.layer === "dns" ? "same DNS provider" : `${label[l.layer]} · ${l.name.replace(/^Other \((.+)\)$/, "$1")}${strength === "region" && s.hostingRegion ? ` ${s.hostingRegion}` : ""}` });
     }
     // strongest link first; inside a group, services of the same kind (e.g. other banks) before the rest
     all3.sort((a, b) => rank[a.strength] - rank[b.strength] || Number(b.sameCat) - Number(a.sameCat) || a.name.localeCompare(b.name));
@@ -260,10 +261,14 @@ export async function getStatusPageData(rawSlug: string, opts: { full?: boolean 
   const en = curatedPage || earned.en.has(slug) || (kind !== "unknown" && picked.some((p) => featuredService(p.s.id, top)));
   const indexable = { en, de: curatedPage || earned.de.has(slug) || (en && picked.some((p) => DE_CATEGORIES.has(p.s.category))) };
 
+  // Public pages show live state and the main provider (hosting, cloud region, CDN). DNS and email operators, the
+  // origin's city/coordinates and the network country stay internal (owner decision 2026-11-01: no full mapping in public).
+  const publicRows = shown.map((r) => ({ ...r, dnsProvider: null, emailProvider: null, hostingCountry: null,
+    hostingCity: null, geoCountry: null, hostingLat: null, hostingLon: null }));
   return {
     slug, kind, name, blurb: def?.blurb ?? null, category, regions: !!def?.regions, checkedAt: live.checkedAt,
-    rows: shown, rowsTotal: visible.length, summary, regionStats, alertIds, incidents,
-    infrastructure, sharedWith, sharedTotals, related, lastIssue, issues30d, indexable,
+    rows: publicRows, rowsTotal: visible.length, summary, regionStats, alertIds, incidents,
+    infrastructure: infrastructure.filter((i) => i.layer !== "dns"), sharedWith, sharedTotals, related, lastIssue, issues30d, indexable,
   };
 }
 

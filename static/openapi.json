@@ -4,10 +4,10 @@
     "title": "ShadowGraph API",
     "version": "3.0.0",
     "summary": "Independent live status, infrastructure dependencies and outage research for 3,000+ internet services.",
-    "description": "ShadowGraph probes about 3,200 public endpoints (APIs, SaaS, banks, the most-visited websites, cloud region canaries) every 5 minutes from one measurement node in AWS us-east-1, re-checks failures from six continents every 30 minutes, and maps what each service runs on: hosting provider, cloud region, CDN, DNS and email provider. The API exposes the same data the website shows.\n\nAll endpoints return JSON unless noted, use UTC ISO-8601 timestamps and need no authentication, except the full dependency dataset (bearer key) and the paid machine-intelligence endpoint (HTTP 402 / Machine Payments Protocol). Responses are cached at the edge for 20 s to 5 min (see Cache-Control). Please keep polling to at most once per minute per endpoint; the data changes every 5 minutes.\n\nMethodology, limits and every retired rule are public: https://shadowalpha.online/research/methods",
+    "description": "ShadowGraph probes about 3,200 public endpoints (APIs, SaaS, banks, the most-visited websites, cloud region canaries) every 5 minutes from one measurement node in AWS us-east-1, re-checks failures from six continents every 30 minutes, and maps what each service runs on: hosting provider, cloud region, CDN, DNS and email provider. The API exposes the same data the website shows.\n\nAll endpoints return JSON unless noted, use UTC ISO-8601 timestamps and need no authentication, except the measurement tables and the full dependency dataset (data key, bearer) and the paid machine-intelligence endpoint (HTTP 402 / Machine Payments Protocol). Responses are cached at the edge for 20 s to 5 min (see Cache-Control). Please keep polling to at most once per minute per endpoint; the data changes every 5 minutes.\n\nMethodology, limits and every retired rule are public: https://shadowalpha.online/research/methods",
     "contact": { "name": "ShadowGraph", "url": "https://shadowalpha.online" },
-    "license": { "name": "Open data tables: CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/" },
-    "x-guidance": "Agents: start with GET /_api/search or GET /_api/status/page for 'is X down?' questions; use GET /_api/radar/status for the full live picture. For market intelligence start with free GET /_api/agent_preview, then POST /_api/machine/intelligence (HTTP 402 / MPP). Outputs labelled inferred or statistical are hypotheses, not proof."
+    "license": { "name": "Proprietary. Measurement tables and the full radar feed under the ShadowGraph data licence", "url": "https://shadowalpha.online/research/data" },
+    "x-guidance": "Agents: start with GET /_api/search or GET /_api/status/page for 'is X down?' questions. For market intelligence start with free GET /_api/agent_preview, then POST /_api/machine/intelligence (HTTP 402 / MPP). Outputs labelled inferred or statistical are hypotheses, not proof."
   },
   "externalDocs": { "description": "Human-readable API documentation", "url": "https://shadowalpha.online/docs" },
   "x-service-info": {
@@ -28,7 +28,7 @@
     { "name": "Status", "description": "Is a service down right now, since when, and why. Live state from the newest two 5-minute sweeps: up, degraded (one failed check), down (two failed checks in a row)." },
     { "name": "Search", "description": "One query across services, providers, cloud regions, incidents, SEC customer concentration and public AI agents." },
     { "name": "Vendor risk", "description": "Bulk infrastructure scan of up to 300 third-party vendors (hosting, region, CDN, DNS, email, network owner, TLS and domain expiry) with portfolio concentration. Built for DORA ICT third-party registers." },
-    { "name": "Research & open data", "description": "Published studies, the dated infrastructure report and the CC BY 4.0 measurement dataset." },
+    { "name": "Research & data", "description": "Published studies, the dated infrastructure report and the measurement dataset (data key)." },
     { "name": "Dependency data", "description": "Customer to supplier revenue dependencies from SEC annual filings (inline XBRL)." },
     { "name": "AI agents", "description": "Machine interfaces (MCP, A2A), the free agent preview and the public agent directory with hourly reachability." },
     { "name": "Machine intelligence (paid)", "description": "Pay-per-call intelligence via the Machine Payments Protocol (Stripe). HTTP returns 402 with a WWW-Authenticate: Payment challenge; MCP returns JSON-RPC error -32042." },
@@ -62,8 +62,8 @@
           "hostingLat": { "type": ["number", "null"] },
           "hostingLon": { "type": ["number", "null"] },
           "cdn": { "type": ["string", "null"], "example": "Cloudflare" },
-          "dnsProvider": { "type": ["string", "null"], "example": "AWS Route 53" },
-          "emailProvider": { "type": ["string", "null"], "example": "Google Workspace" },
+          "dnsProvider": { "type": ["string", "null"], "description": "Not included in public status-page responses." },
+          "emailProvider": { "type": ["string", "null"], "description": "Not included in public status-page responses." },
           "state": { "$ref": "#/components/schemas/State" },
           "httpStatus": { "type": ["integer", "null"], "description": "Status of the latest probe (redirects are not followed; 401/404 count as reachable)." },
           "latencyMs": { "type": ["integer", "null"] },
@@ -132,40 +132,10 @@
             "headers": { "Cache-Control": { "schema": { "type": "string" }, "description": "public, s-maxage=60" } },
             "content": { "application/json": {
               "schema": { "$ref": "#/components/schemas/StatusPage" },
-              "example": { "slug": "stripe-api", "kind": "service", "name": "Stripe API", "category": "Payments & fintech", "checkedAt": "2026-10-14T17:06:40.539Z", "rows": [ { "id": "api-stripe-com", "name": "Stripe API", "category": "Payments & fintech", "analyzedHost": "api.stripe.com", "hostingProvider": "Amazon Web Services", "hostingRegion": null, "hostingCountry": "US", "cdn": null, "dnsProvider": "AWS Route 53", "emailProvider": "Google Workspace", "state": "up", "httpStatus": 404, "latencyMs": 61, "error": null, "uptime24h": 1, "samples24h": 288, "via": [], "slug": "stripe-api", "since": null } ], "incidents": [], "infrastructure": [ { "layer": "hosting", "name": "Amazon Web Services", "slug": "aws", "services": 1 } ], "sharedWith": [ { "slug": "adyen-checkout", "name": "Adyen Checkout", "via": "hosting · Amazon Web Services" } ], "lastIssue": null, "issues30d": 0 }
+              "example": { "slug": "stripe-api", "kind": "service", "name": "Stripe API", "category": "Payments & fintech", "checkedAt": "2026-10-14T17:06:40.539Z", "rows": [ { "id": "api-stripe-com", "name": "Stripe API", "category": "Payments & fintech", "analyzedHost": "api.stripe.com", "hostingProvider": "Amazon Web Services", "hostingRegion": null, "hostingCountry": "US", "cdn": null, "dnsProvider": null, "emailProvider": null, "state": "up", "httpStatus": 404, "latencyMs": 61, "error": null, "uptime24h": 1, "samples24h": 288, "via": [], "slug": "stripe-api", "since": null } ], "incidents": [], "infrastructure": [ { "layer": "hosting", "name": "Amazon Web Services", "slug": "aws", "services": 1 } ], "sharedWith": [ { "slug": "adyen-checkout", "name": "Adyen Checkout", "via": "hosting · Amazon Web Services" } ], "lastIssue": null, "issues30d": 0 }
             } }
           },
           "503": { "description": "Live data temporarily unavailable.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
-        }
-      }
-    },
-    "/_api/radar/status": {
-      "get": {
-        "tags": ["Status"],
-        "operationId": "getRadarStatus",
-        "summary": "Full live radar",
-        "description": "Every monitored service with live state and infrastructure, open and recent provider incidents with blast radius, a 24 h error timeline, recent state changes, provider and category summaries and concentration shares per layer. About 1.3 MB uncompressed; send Accept-Encoding: gzip (about 90 KB on the wire). Refreshed every 5 minutes.",
-        "responses": {
-          "200": {
-            "description": "status = warming_up until the first sweep after a deploy, then live.",
-            "content": { "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "status": { "type": "string", "enum": ["live", "warming_up"] },
-                  "run": { "type": "object", "properties": { "runId": { "type": "string" }, "at": { "type": "string", "format": "date-time" }, "total": { "type": "integer" }, "up": { "type": "integer" }, "degraded": { "type": "integer" }, "down": { "type": "integer" }, "vantageSuspect": { "type": "boolean", "description": "More than 50 % of probes failed at once: our node is suspect and no incidents are opened or resolved." }, "medianLatencyMs": { "type": ["integer", "null"] } } },
-                  "services": { "type": "array", "items": { "$ref": "#/components/schemas/Service" } },
-                  "incidents": { "type": "array", "items": { "$ref": "#/components/schemas/Incident" } },
-                  "timeline": { "type": "array", "items": { "type": "object", "properties": { "bucket": { "type": "string" }, "checks": { "type": "integer" }, "failed": { "type": "integer" }, "services": { "type": "integer" } } } },
-                  "events": { "type": "array", "description": "Recent state changes.", "items": { "type": "object" } },
-                  "providers": { "type": "array", "items": { "type": "object" } },
-                  "concentration": { "type": "object", "description": "Share of mapped services per provider for hosting, cdn, dns and email." },
-                  "categories": { "type": "array", "items": { "type": "object" } }
-                }
-              },
-              "example": { "status": "live", "run": { "runId": "2026-10-14T17:00:38.684Z", "at": "2026-10-14T17:00:38.684Z", "total": 3174, "up": 3165, "degraded": 3, "down": 6, "vantageSuspect": false, "medianLatencyMs": 574 }, "services": [ { "id": "api-anthropic-com", "name": "Anthropic API", "category": "AI APIs", "hostingProvider": "Anthropic", "hostingRegion": null, "hostingCountry": "US", "cdn": null, "dnsProvider": "Cloudflare", "emailProvider": "Google Workspace", "analyzedHost": "api.anthropic.com", "state": "up", "httpStatus": 404, "latencyMs": 183, "error": null, "uptime24h": 1, "samples24h": 288 } ], "incidents": [], "timeline": [], "events": [], "providers": [], "concentration": {}, "categories": [] }
-            } }
-          }
         }
       }
     },
@@ -264,7 +234,7 @@
     },
     "/_api/report/internet": {
       "get": {
-        "tags": ["Research & open data"],
+        "tags": ["Research & data"],
         "operationId": "getInternetReport",
         "summary": "Who runs the internet? (daily report)",
         "description": "Dated snapshot: blast radius per provider (share of mapped services depending on it via hosting, CDN or DNS), hosting/CDN/DNS/email concentration, cloud regions, single-vendor stacks, sector dependencies, SEC revenue concentration and radar reliability.",
@@ -273,7 +243,7 @@
     },
     "/_api/research/overview": {
       "get": {
-        "tags": ["Research & open data"],
+        "tags": ["Research & data"],
         "operationId": "getResearchOverview",
         "summary": "Research results (recomputed hourly)",
         "description": "Versioned results of the shared-fate study (sf-v1, permutation null, Holm-corrected), radar validation against official incidents (val-v1, recall/precision with 95 % intervals, misses listed) and concentration (conc-v1, Herfindahl-Hirschman per layer).",
@@ -282,7 +252,7 @@
     },
     "/_api/research/outage_impact": {
       "get": {
-        "tags": ["Research & open data"],
+        "tags": ["Research & data"],
         "operationId": "getOutageImpactStudy",
         "summary": "Do outages move the provider's stock?",
         "description": "Pre-registered event study of 26 major public outages (2011–2025), SPY market model. Result: not supported — no significant abnormal return on the day or after it. Do not use outage detections as trading signals.",
@@ -291,7 +261,7 @@
     },
     "/_api/research/customer_momentum": {
       "get": {
-        "tags": ["Research & open data"],
+        "tags": ["Research & data"],
         "operationId": "getCustomerMomentumStudy",
         "summary": "Do suppliers follow their big customers?",
         "description": "Daily adaptation of Cohen & Frazzini (2008) on SEC customer links: suppliers react on the same day as a customer's ≥3σ shock, but the post-event drift is not significantly larger than for random unlinked suppliers.",
@@ -300,10 +270,11 @@
     },
     "/_api/research/dataset": {
       "get": {
-        "tags": ["Research & open data"],
-        "operationId": "getOpenDataset",
-        "summary": "Open measurement dataset (CSV, CC BY 4.0)",
-        "description": "Rolling tables; every row carries its own timestamps. Cite as: ShadowGraph Open Measurement Dataset, shadowalpha.online, CC BY 4.0.",
+        "tags": ["Research & data"],
+        "operationId": "getMeasurementDataset",
+        "summary": "Measurement dataset (CSV, data key)",
+        "description": "Rolling tables; every row carries its own timestamps. Requires a data key (included in the data subscription at https://shadowalpha.online/data). Licence: internal use by the key holder, no redistribution or resale.",
+        "security": [ { "datasetKey": [] } ],
         "parameters": [
           { "name": "table", "in": "query", "required": true, "schema": { "type": "string", "enum": ["services", "sweeps", "episodes", "hourly", "status_incidents", "provider_incidents", "upstream_signals"] } },
           { "name": "days", "in": "query", "required": false, "description": "Window for sweeps and hourly (1–31).", "schema": { "type": "integer", "minimum": 1, "maximum": 31, "default": 7 } }

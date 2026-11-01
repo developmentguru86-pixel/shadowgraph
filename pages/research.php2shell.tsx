@@ -111,7 +111,7 @@ export default function Php2ShellStudy() {
         </ul>
       </Block>
 
-      <Block num="06" title="Data" intro={<p>{ROWS.length} of the {ANALYSED} affected sites with start, recovery, duration, error and the technology fingerprint, as CSV under CC BY 4.0. {UNLISTED.count} adult sites are counted in all figures but not listed by name. The numbers on this page are frozen and will not change.</p>}>
+      <Block num="06" title="Data" intro={<p>{ROWS.length} of the {ANALYSED} affected sites with start, recovery, duration, error and the technology fingerprint, as CSV. {UNLISTED.count} adult sites are counted in all figures but not listed by name. The numbers on this page are frozen and will not change.</p>}>
         <button type="button" className={styles.download} onClick={download}>Download the data (CSV)</button>
         <Note>Method: HTTPS reachability checks every five minutes; an outage is two or more consecutive failed checks, counted here when it lasted 30 minutes or more and started on 21 October (UTC). Vulnerability sources: CISA alert of 21 October 2026, Help Net Security, Sansec, Google Cloud.</Note>
       </Block>

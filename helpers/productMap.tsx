@@ -41,7 +41,7 @@ export const STAGES: Stage[] = [
       { href: "/research/upstream-signals", label: "Signal track record", hint: "How often warnings were right" },
       { href: "/research/shared-fate", label: "Shared fate", hint: "Do shared providers fail together?" },
       { href: "/research/methods", label: "Methods", hint: "Rules, limits, changelog" },
-      { href: "/research/data", label: "Open data", hint: "CSV downloads, CC BY 4.0" },
+      { href: "/research/data", label: "Data access", hint: "CSV tables with a data key" },
     ],
   },
   {
